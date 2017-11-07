@@ -1,24 +1,26 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, {Component} from 'react';
+import {StackNavigator} from 'react-navigation';
+import {TabNavigator} from "react-navigation";
+import RequestListScreen from "./src/screens/RequestList";
+import CreateRequest from "./src/screens/CreateRequest";
 
-export default class App extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-        <Text>Changes you make will automatically reload.</Text>
-        <Text>Shake your phone to open the developer menu.</Text>
-        <Text>:)</Text>
-      </View>
-    );
-  }
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+const MainScreenNavigator = TabNavigator({
+    'Requests': {screen: RequestListScreen},
+    'Create Request': {screen: CreateRequest},
 });
+
+const MainApp = StackNavigator({
+    Home: {
+        screen: MainScreenNavigator,
+        navigationOptions: {
+            title: 'Parking System',
+        },
+    },
+});
+
+export default class App extends Component {
+    render() {
+        return <MainApp/>;
+    }
+}
