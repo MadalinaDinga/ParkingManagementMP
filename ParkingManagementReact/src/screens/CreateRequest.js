@@ -6,7 +6,8 @@ import {
     ActivityIndicator,
     Button, TextInput, Picker
 } from 'react-native';
-import * as Linking from "react-native";
+import Mailer from 'react-native-mail';
+import * as Alert from "react-native";
 
 
 const requestTypes = [
@@ -102,16 +103,31 @@ export default class CreateRequest extends Component {
         });
     }
 
-    handleCreateRequest() {
-        // Linking.canOpenURL(url).then(supported => {
-        //     if (!supported) {
-        //         console.log('Can\'t handle url: ' + url);
-        //     } else {
-        //         return Linking.openURL(url);
-        //     }
-        // }).catch(err => console.error('An error occurred', err));
-
-        console.log("Send");
+    handleCreateRequest = () => {
+    //     Mailer.mail({
+    //         subject: 'request parking lot',
+    //         recipients: ['support@example.com'],
+    //         ccRecipients: ['supportCC@example.com'],
+    //         bccRecipients: ['supportBCC@example.com'],
+    //         body: '<b>A Bold Body</b>',
+    //         isHTML: true,
+    //         attachment: {
+    //             path: 'C/Users/Madalina/Desktop',  // The absolute path of the file from which to read data.
+    //             type: 'doc',   // Mime Type: jpg, png, doc, ppt, html, pdf
+    //             name: '',   // Optional: Custom filename for attachment
+    //         }
+    //     }, (error, event) => {
+    //         Alert.alert(
+    //             error,
+    //             event,
+    //             [
+    //                 {text: 'Ok', onPress: () => console.log('OK: Email Error Response')},
+    //                 {text: 'Cancel', onPress: () => console.log('CANCEL: Email Error Response')}
+    //             ],
+    //             { cancelable: true }
+    //         )
+    //     });
+         console.log("Email sent");
     };
 
     render() {
@@ -163,7 +179,7 @@ export default class CreateRequest extends Component {
 
                 <Button
                     style={{fontSize: 20, color: 'green'}}
-                    onPress={this.handleCreateRequest.bind()}
+                    //onPress={this.handleCreateRequest}
                     title="Create Request"
                     color="#841584"
                     accessibilityLabel="Learn more about this purple button"
