@@ -2,7 +2,7 @@ export default class RequestsAPI {
 
     static getRequests() {
         return fetch(
-            `http://localhost:3004/requests`,
+            `http://` + `192.168.0.181` + `:3004/requests`,
             {
                 method: 'GET'
             })
@@ -16,7 +16,7 @@ export default class RequestsAPI {
 
     static getRequestsById(id) {
         return fetch(
-            `http://localhost:3004/requests/${id}`,
+            `http://` + `192.168.0.181` + `:3004/requests/${id}`,
             {
                 method: 'GET'
             })

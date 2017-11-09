@@ -3,6 +3,7 @@ import {StackNavigator} from 'react-navigation';
 import {TabNavigator} from "react-navigation";
 import RequestListScreen from "./src/screens/RequestList";
 import CreateRequest from "./src/screens/CreateRequest";
+import {StyleSheet} from "react-native";
 
 
 const MainScreenNavigator = TabNavigator({
@@ -21,6 +22,14 @@ const MainApp = StackNavigator({
 
 export default class App extends Component {
     render() {
-        return <MainApp/>;
+        return (
+            <MainApp/>
+        );
     }
 }
+
+const styles = StyleSheet.create({
+    screen:{
+        backgroundColor: 'red',
+    },
+});

@@ -5,7 +5,7 @@ import {
     View,
     ListView,
     ActivityIndicator,
-    Button
+    Button, TouchableHighlight
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 
@@ -47,7 +47,9 @@ export default class RequestListScreen extends Component {
         //     loaded: 1,
         // });
 
-        fetch("http://172.20.10.9:3004/requests")
+        // fetch("http://172.20.10.9:3004/requests")
+        // fetch(`http://` + `192.168.0.181` + `:3004/requests`)
+        fetch(`http://` + `172.25.13.45` + `:3004/requests`)
             .then((response) => {
                 if (response.status === 200) {
                     try {
@@ -111,14 +113,14 @@ export default class RequestListScreen extends Component {
     render() {
         if (this.state.loaded === 0) {
             return (
-                <View>
+                <View style={styles.screen}>
                     <Text> Welcome to the Parking System App :) </Text>
                     <Text> Please wait... </Text>
                     <ActivityIndicator/>
                 </View>);
         } else if (this.state.loaded === 2) {
             return (
-                <View>
+                <View style={styles.screen}>
                     <Text> The content is not available </Text>
                     <Button title="Retry" onPress={() => {
                         this.setState({loaded: 0});
@@ -127,7 +129,7 @@ export default class RequestListScreen extends Component {
                 </View>);
         }
         return (
-            <View>
+            <View style={styles.screen}>
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRequest}
@@ -140,8 +142,11 @@ export default class RequestListScreen extends Component {
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        backgroundColor: '#f2f2f2',
+    },
     listView: {
         paddingTop: 20,
-        backgroundColor: '#F5FCFF',
+        backgroundColor: '#f2f2f2',
     },
 });
