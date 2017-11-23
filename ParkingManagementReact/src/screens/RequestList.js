@@ -5,7 +5,7 @@ import {
     View,
     ListView,
     ActivityIndicator,
-    Button, TouchableHighlight
+    Button, TouchableHighlight,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 
@@ -17,6 +17,7 @@ const listData = [
 ];
 
 export default class RequestListScreen extends Component {
+
     constructor(prop) {
         super(prop);
         this.state = {
@@ -31,10 +32,6 @@ export default class RequestListScreen extends Component {
         this.fetchData();
     }
 
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     showRetry() {
         this.setState({
             loaded: 2,
@@ -47,26 +44,9 @@ export default class RequestListScreen extends Component {
         //     loaded: 1,
         // });
 
-        // fetch("http://172.20.10.9:3004/requests")
-        // fetch(`http://` + `192.168.0.181` + `:3004/requests`)
-        fetch(`http://` + `172.25.13.45` + `:3004/requests`)
-            .then((response) => {
-                if (response.status === 200) {
-                    try {
-                        return response.json();
-                    } catch (e) {
-                        console.log("Unable to parse response: " + response, e);
-                        this.showRetry();
-                        return null;
-                    }
-                }
-                console.log("response: " + JSON.stringify(response));
-                this.showRetry();
-                return null;
-            })
+        RequestsAPI.getRequests()
             .then((responseData) => {
                 if (responseData !== null) {
-                    console.log("responseData:"+JSON.stringify(responseData));
                     this.setState({
                         dataSource: this.state.dataSource.cloneWithRows(responseData),
                         loaded: 1,
@@ -77,46 +57,42 @@ export default class RequestListScreen extends Component {
             })
             .catch((err) => {
                 console.error(err);
-
                 this.showRetry();
             })
             .done();
-
-
-        // RequestsAPI.getRequests()
-        //     .then((request) => {
-        //         this.setState({
-        //             requestsDataSource: request
-        //         })
-        //     })
-        //     .catch((error) => {
-        //         console.log('Message::ERROR:', error);
-        //         this.setState({
-        //             showError: true
-        //         })
-        //     });
     }
 
-    renderRequest(request) {
+
+    renderRequest(nav, request) {
         return (
-        <View>
-            <Text>{request.id} - {request.type}
-                {"\n"}Requested by: {request.requestedFor}
-                {"\n"}Requested from: {request.requestedFrom}
-                {"\n"}Status: {request.status}
-                {"\n"}
-            </Text>
-        </View>
+            /*TODO: different fields depending on the request type*/
+        <TouchableHighlight
+            accessible={true}
+            accessibilityLabel={'Tap on the row to view & edit the request.'}
+            onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
+            <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
+                <Text style={styles.listItem}
+                      accessible={true}
+                      accessibilityLabel="This is a request item">{request.id} - {request.type}
+                    {"\n"}Requested by: {request.requestedFor}
+                    {"\n"}Requested from: {request.requestedFrom}
+                    {"\n"}Status: {request.status}
+                    {"\n"}
+                </Text>
+            </View>
+        </TouchableHighlight>
         );
     }
 
     render() {
+        let nav = this.props.navigation;
+
         if (this.state.loaded === 0) {
             return (
                 <View style={styles.screen}>
                     <Text> Welcome to the Parking System App :) </Text>
                     <Text> Please wait... </Text>
-                    <ActivityIndicator/>
+                    <ActivityIndicator animating={true} style={styles.activityIndicator} size="large"/>
                 </View>);
         } else if (this.state.loaded === 2) {
             return (
@@ -132,7 +108,7 @@ export default class RequestListScreen extends Component {
             <View style={styles.screen}>
                 <ListView
                     dataSource={this.state.dataSource}
-                    renderRow={this.renderRequest}
+                    renderRow={this.renderRequest.bind(this, nav)}
                     style={styles.listView}
                 />
             </View>
@@ -147,6 +123,13 @@ const styles = StyleSheet.create({
     },
     listView: {
         paddingTop: 20,
-        backgroundColor: '#f2f2f2',
+       backgroundColor: '#f2f2f2',
+    },
+    listItemWrapper: {
+        margin: 5,
+        backgroundColor: '#B6C5D3',
+    },
+    activityIndicator: {
+        height: 50,
     },
 });

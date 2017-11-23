@@ -4,11 +4,10 @@ import {
     Text,
     View,
     ActivityIndicator,
-    Button, TextInput, Picker
+    Button, TextInput, Picker,
+    Share,
+    Alert,
 } from 'react-native';
-import Mailer from 'react-native-mail';
-import * as Alert from "react-native";
-
 
 const requestTypes = [
     {"id": 1, "type": "Parking Spot Rental"},
@@ -35,13 +34,15 @@ export default class CreateRequest extends Component {
         super(prop);
         this.state = {
             //input fields state
-            receiverEmail: "Receiver email",
-            receiverName: "Receiver name",
-            creatorName: "Creator name",
             requestType: "",
+            receiverName: "",
+            creatorName: "",
+            messageFromCreator: "",
 
             //the request types
             requestTypesData: [],
+
+            inputData: [],
 
             loaded: 0,
 
@@ -58,7 +59,8 @@ export default class CreateRequest extends Component {
         //     loaded: 1,
         // });
 
-        fetch(`http://` + `192.168.0.181` + `:3004/requestTypes`)
+        fetch(`http://` + `192.168.4.2` + `:3004/requestTypes`)
+        // fetch(`http://` + `192.168.0.181` + `:3004/requestTypes`)
             .then((response) => {
                 if (response.status === 200) {
                     try {
@@ -75,7 +77,7 @@ export default class CreateRequest extends Component {
             })
             .then((responseData) => {
                 if (responseData !== null) {
-                    console.log("responseData:"+JSON.stringify(responseData));
+                    //console.log("responseData:"+JSON.stringify(responseData));
                     this.setState({
                         requestTypesData: responseData,
                         loaded: 1,
@@ -103,31 +105,32 @@ export default class CreateRequest extends Component {
         });
     }
 
-    handleCreateRequest = () => {
-    //     Mailer.mail({
-    //         subject: 'request parking lot',
-    //         recipients: ['support@example.com'],
-    //         ccRecipients: ['supportCC@example.com'],
-    //         bccRecipients: ['supportBCC@example.com'],
-    //         body: '<b>A Bold Body</b>',
-    //         isHTML: true,
-    //         attachment: {
-    //             path: 'C/Users/Madalina/Desktop',  // The absolute path of the file from which to read data.
-    //             type: 'doc',   // Mime Type: jpg, png, doc, ppt, html, pdf
-    //             name: '',   // Optional: Custom filename for attachment
-    //         }
-    //     }, (error, event) => {
-    //         Alert.alert(
-    //             error,
-    //             event,
-    //             [
-    //                 {text: 'Ok', onPress: () => console.log('OK: Email Error Response')},
-    //                 {text: 'Cancel', onPress: () => console.log('CANCEL: Email Error Response')}
-    //             ],
-    //             { cancelable: true }
-    //         )
-    //     });
-         console.log("Email sent");
+    handleCreateRequest = (requestType, receiverName, creatorName, creatorMessage) => {
+        console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "messageFromCreator: " + creatorMessage);
+        if (receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
+        // if (requestType!=="" && receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
+            Share.share({
+                message: `${requestType} Request\n from ${creatorName}\n to  ${receiverName}\n Message:\n ${creatorMessage}`,
+                url: 'https://github.com/MadalinaDinga/ParkingManagementMP',
+                title: `New ${requestType}`
+            }, {
+                // Android only:
+                dialogTitle: 'New request',
+                // iOS only:1
+                excludedActivityTypes: [
+                    'com.apple.UIKit.activity.PostToTwitter'
+                ]
+            });
+        }else{
+            Alert.alert(
+                'Empty fields',
+                'Please fill all the input fields.',
+                [
+                    {text: 'OK', onPress: () => console.log('OK Pressed')},
+                ],
+                { cancelable: false }
+            );
+        }
     };
 
     render() {
@@ -135,7 +138,7 @@ export default class CreateRequest extends Component {
             return (
                 <View style={styles.screen}>
                     <Text> Please wait... </Text>
-                    <ActivityIndicator/>
+                    <ActivityIndicator animating={true} style={styles.activityIndicator} size="large"/>
                 </View>);
         } else if (this.state.loaded === 2) {
             return (
@@ -148,41 +151,58 @@ export default class CreateRequest extends Component {
                 </View>);
         }
         return (
-            <View style={styles.screen}>
+            <View style={styles.screen} accessibilityLiveRegion="assertive">
                 <Text style={styles.title}>New Request</Text>
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={(text) => this.setState({receiverEmail})}
-                    value={this.state.receiverEmail}
-                />
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={(text) => this.setState({receiverName})}
-                    value={this.state.receiverName}
-                />
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={(text) => this.setState({creatorName})}
-                    value={this.state.creatorName}
-                />
 
-                <Picker
+               {/* <Picker
                     selectedValue={this.state.requestType}
-                    onValueChange={(itemValue, itemIndex) => this.setState({requestType: itemValue})}>
+                    onValueChange={(itemValue) => this.setState({requestType: itemValue})}
+                    prompt="Choose request type"
+                    accessible={true}
+                    accessibilityLabel="Choose request type">
 
-                    <Picker.Item label="Choose request type" value="default" enabled={false}/>
                     {this.state.requestTypesData.map( (row, index) => (
-                        <Picker.Item key="index" label={row.type} value={row.type} />
+                            <Picker.Item key={index} label={row.type} value={row.type} />
                         )
                     )}
-                </Picker>
+                </Picker>*/}
+
+                <Text>Receiver name</Text>
+                <TextInput
+                    style={styles.textInput}
+                    onChangeText={(text) => this.setState({receiverName: text})}
+                    value={this.state.receiverName}
+                    accessible={true}
+                    accessibilityLabel="Write the receiver's name"
+                />
+
+                <Text>Creator name</Text>
+                <TextInput
+                    style={styles.textInput}
+                    onChangeText={(text) => this.setState({creatorName: text})}
+                    value={this.state.creatorName}
+                    accessible={true}
+                    accessibilityLabel="Write your name"
+                />
+
+                <Text>Your message</Text>
+                <TextInput
+                    style={styles.textInput}
+                    onChangeText={(text) => this.setState({creatorMessage: text})}
+                    value={this.state.creatorMessage}
+                    accessible={true}
+                    accessibilityLabel="Give a comment"
+                />
 
                 <Button
-                    style={{fontSize: 20, color: 'green'}}
-                    //onPress={this.handleCreateRequest}
+                    style={{fontSize: 20}}
+                    onPress={this.handleCreateRequest.bind(this,
+                        this.state.selectedRequestType, this.state.receiverName, this.state.creatorName, this.state.messageFromCreator)}
                     title="Create Request"
                     color="#841584"
-                    accessibilityLabel="Learn more about this purple button"
+                    accessible={true}
+                    accessibilityLabel="Send the request"
+                    accessibilityComponentType="button"
                 />
             </View>
         );
