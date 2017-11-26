@@ -1,0 +1,5 @@
+SELECT requests.id, request_types.type, f.username AS "Created by", t.username AS "Requested from"
+FROM requests 
+INNER JOIN request_types ON request_types.id = requests.request_type_id
+INNER JOIN users f ON f.id = requests.created_by_user_id
+INNER JOIN users t ON t.id = requests.requested_from_user_id
