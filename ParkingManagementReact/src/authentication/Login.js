@@ -20,12 +20,26 @@ export class Login extends Component {
         };
     }
 
+    componentDidMount(){
+        AsyncStorage.getItem('username',(err, result) => {
+            this.setState({
+                username: result,
+            })
+        });
+
+        AsyncStorage.getItem('password',(err, result) => {
+            this.setState({
+                password: result,
+            })
+        })
+    };
+
     handleCheckBox = (rememberUserChecked, username, password) => {
-        // TODO: make it work
         console.log("Remember password checked - " + rememberUserChecked + " username: " + username + " password: " + password);
         if (this.state.rememberUserChecked === false ) {
             AsyncStorage.setItem('username', username);
             AsyncStorage.setItem('password', password);
+
             this.setState({
                 rememberUserChecked: true
             });
@@ -58,42 +72,59 @@ export class Login extends Component {
     render() {
         let nav = this.props.navigation;
 
+        //if there already exists a username/ password in the async storage, then use them as default value
+        let defaultValueUsernameTextBox = {};
+        if (this.state.username !== ''){
+            defaultValueUsernameTextBox.defaultValue = this.state.username;
+        }
+
+        let defaultValuePasswordTextBox = {};
+        if (this.state.password !== ''){
+            defaultValuePasswordTextBox.defaultValue = this.state.password;
+        }
+
         return (
             <View style={styles.content}>
                 <Text>Username</Text>
-                <TextInput style={styles.textBox}
-                           placeholder="type your username here"
-                           autoCapitalize= "none"
-                           autoCorrect={false}
-                           onChangeText={(text) => this.setState({...this.state, username: text})}
-                           accessibilityLabel="Write your username"/>
+                <TextInput
+                    {...defaultValueUsernameTextBox}
+                    style={styles.textBox}
+                    placeholder="type your username here"
+                    autoCapitalize= "none"
+                    autoCorrect={false}
+                    accessibilityLabel="Write your username"
+                    onChangeText={(text) => this.setState({...this.state, username: text})}
+                    />
 
                 <Text>Password</Text>
-                <TextInput style={styles.textBox}
-                           placeholder="type your password here"
-                           autoCapitalize="none"
-                           autoCorrect={false}
-                           secureTextEntry={true}
-                           onChangeText={(text) => this.setState({...this.state, password: text})}
-                           accessibilityLabel="Write your password"/>
+                <TextInput
+                    {... defaultValuePasswordTextBox}
+                    style={styles.textBox}
+                    placeholder="type your password here"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    secureTextEntry={true}
+                    accessibilityLabel="Write your password"
+                    onChangeText={(text) => this.setState({...this.state, password: text})}
+                    />
 
                 <Text>Remember Me</Text>
                 <CheckBox
                     style={{margin:10}}
-                    onValueChange={this.handleCheckBox.bind(this, this.state.rememberUserChecked, this.state.username, this.state.password)}
                     value={this.state.rememberUserChecked}
                     accessibilityLabel="Select to save your username and password"
+                    onValueChange={this.handleCheckBox.bind(this, this.state.rememberUserChecked, this.state.username, this.state.password)}
                 />
 
                 <Button
                     style={{fontSize: 20, margin:10}}
-                    onPress={this.handleLogin.bind(this,
-                        this.state.username, this.state.password, nav)}
                     title="Login"
                     color="#841584"
                     accessible={true}
                     accessibilityLabel="Login"
                     accessibilityComponentType="button"
+                    onPress={this.handleLogin.bind(this,
+                        this.state.username, this.state.password, nav)}
                 />
             </View>
         );

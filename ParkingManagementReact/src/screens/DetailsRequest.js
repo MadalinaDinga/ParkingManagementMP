@@ -49,7 +49,6 @@ export default class DetailsRequest extends Component {
 
     componentDidMount() {
         this.fetchData();
-        console.log(this.state.requestData);
     }
 
     showRetry() {
@@ -79,10 +78,22 @@ export default class DetailsRequest extends Component {
             })
             .done();
 
-
-        this.setState({
-            requestTypes: requestTypes,
-        });
+        RequestsAPI.getRequestTypes()
+            .then((responseData) => {
+                if (responseData !== null) {
+                    this.setState({
+                        requestTypes: responseData,
+                        loaded: 1,
+                    });
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((error) => {
+                console.log('Message::ERROR:', error);
+                this.showRetry();
+            })
+            .done();
     }
 
     handleEditRequest = (requestPeriod, requestType, comment) =>{
@@ -110,15 +121,16 @@ export default class DetailsRequest extends Component {
         return (
             <View  accessibilityLiveRegion="assertive">
                 <Text>Request type( editable):</Text>
-                {/*<Picker
+                <Picker
                     selectedValue={this.state.selectedRequestType}
-                    onValueChange={(itemValue, itemIndex) => this.setState({selectedRequestType: itemValue})}>
-                    {requestTypes.map( (row, index) => (
+                    onValueChange={(itemValue, itemIndex) => this.setState({selectedRequestType: itemValue})}
+                    accessible={true}
+                    accessibilityLabel="Choose request type">
+                    {this.state.requestTypes.map( (row, index) => (
                             <Picker.Item key={index} label={row.type} value={row.type} />
                         )
                     )}
-                    accessibilityLabel="Choose request type"
-                </Picker>*/}
+                </Picker>
 
                 {/*TODO: different fields depending on the request type*/}
                 {/*TODO: make the editable/ not editable text inputs more suggestive*/}

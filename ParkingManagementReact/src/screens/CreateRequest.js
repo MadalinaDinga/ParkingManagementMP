@@ -8,6 +8,7 @@ import {
     Share,
     Alert,
 } from 'react-native';
+import RequestsAPI from "../api/RequestsApi";
 
 const requestTypes = [
     {"id": 1, "type": "Parking Spot Rental"},
@@ -59,25 +60,9 @@ export default class CreateRequest extends Component {
         //     loaded: 1,
         // });
 
-        fetch(`http://` + `192.168.4.2` + `:3004/requestTypes`)
-        // fetch(`http://` + `192.168.0.181` + `:3004/requestTypes`)
-            .then((response) => {
-                if (response.status === 200) {
-                    try {
-                        return response.json();
-                    } catch (e) {
-                        console.log("Unable to parse response: " + response, e);
-                        this.showRetry();
-                        return null;
-                    }
-                }
-                console.log("response: " + JSON.stringify(response));
-                this.showRetry();
-                return null;
-            })
+        RequestsAPI.getRequestTypes()
             .then((responseData) => {
                 if (responseData !== null) {
-                    //console.log("responseData:"+JSON.stringify(responseData));
                     this.setState({
                         requestTypesData: responseData,
                         loaded: 1,
@@ -86,13 +71,11 @@ export default class CreateRequest extends Component {
                     this.showRetry();
                 }
             })
-            .catch((err) => {
-                console.error(err);
-
+            .catch((error) => {
+                console.log('Message::ERROR:', error);
                 this.showRetry();
             })
             .done();
-
     }
 
     sleep(ms) {
@@ -154,7 +137,7 @@ export default class CreateRequest extends Component {
             <View style={styles.screen} accessibilityLiveRegion="assertive">
                 <Text style={styles.title}>New Request</Text>
 
-               {/* <Picker
+                <Picker
                     selectedValue={this.state.requestType}
                     onValueChange={(itemValue) => this.setState({requestType: itemValue})}
                     prompt="Choose request type"
@@ -165,7 +148,7 @@ export default class CreateRequest extends Component {
                             <Picker.Item key={index} label={row.type} value={row.type} />
                         )
                     )}
-                </Picker>*/}
+                </Picker>
 
                 <Text>Receiver name</Text>
                 <TextInput

@@ -8,6 +8,7 @@ import {
     Button, TouchableHighlight,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
+import Swipeout from 'react-native-swipeout';
 
 const listData = [
     {id:1, type: "Parking Spot Rental", requestedAt: "10:22 / 19.09.2016", period: "13.10.16 - 14.10.16", requestedFor: "Raul SABOU", createdBy: "Raul SABOU", requestedFrom: "Mihai ENACHE", status: "Approved"},
@@ -62,25 +63,40 @@ export default class RequestListScreen extends Component {
             .done();
     }
 
+    deleteRequest(){
+
+    }
 
     renderRequest(nav, request) {
+        // delete button on swipe
+        let swipeBtns = [{
+            text: 'Delete',
+            backgroundColor: 'red',
+            underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
+            onPress: () => { this.deleteRequest(request) }
+        }];
+
         return (
             /*TODO: different fields depending on the request type*/
-        <TouchableHighlight
-            accessible={true}
-            accessibilityLabel={'Tap on the row to view & edit the request.'}
-            onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
-            <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
-                <Text style={styles.listItem}
-                      accessible={true}
-                      accessibilityLabel="This is a request item">{request.id} - {request.type}
-                    {"\n"}Requested by: {request.requestedFor}
-                    {"\n"}Requested from: {request.requestedFrom}
-                    {"\n"}Status: {request.status}
-                    {"\n"}
-                </Text>
-            </View>
-        </TouchableHighlight>
+            <Swipeout right={swipeBtns}
+                      autoClose={true}
+                      backgroundColor= 'pink'>
+                <TouchableHighlight
+                    accessible={true}
+                    accessibilityLabel={'Tap on the row to view & edit the request.'}
+                    onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
+                    <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
+                        <Text style={styles.listItem}
+                              accessible={true}
+                              accessibilityLabel="This is a request item">{request.id} - {request.type}
+                            {"\n"}Requested by: {request.requestedFor}
+                            {"\n"}Requested from: {request.requestedFrom}
+                            {"\n"}Status: {request.status}
+                            {"\n"}
+                        </Text>
+                    </View>
+                </TouchableHighlight>
+            </Swipeout>
         );
     }
 
