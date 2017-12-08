@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.RecyclerView android:id="@+id/parkinglot_list"
-    android:name="com.example.dacianmujdar.parkinglots.ParkingLotListFragment"
+    android:name="com.android.app.parkinglots.ParkingLotListFragment"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,5 +9,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="com.example.dacianmujdar.parkinglots.ParkingLotListActivity"
+    tools:context="com.android.app.parkinglots.ParkingLotListActivity"
     tools:listitem="@layout/parkinglot_list_content" />

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ParkingLots</string>
+    <string name="app_name">Parking Requests</string>
     <string name="title_parkinglot_detail">ParkingLot Detail</string>
     <string name="title_activity_input_form">InputForm</string>
 
@@ -86,4 +86,8 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email completions."</string>
+    <string name="delete_string">Delete request</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Log In</string>
 </resources>

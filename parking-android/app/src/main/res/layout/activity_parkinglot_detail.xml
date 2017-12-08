@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.example.dacianmujdar.parkinglots.ParkingLotDetailActivity"
+    tools:context="com.android.app.parkinglots.ParkingLotDetailActivity"
     tools:ignore="MergeRootFrame">
 
     <android.support.design.widget.AppBarLayout
@@ -71,6 +71,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:enabled="false" />
+
+            <com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="50dp"
+                android:minHeight="300dp" />
+
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>

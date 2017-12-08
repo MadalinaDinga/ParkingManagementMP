@@ -9,7 +9,7 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context="com.example.dacianmujdar.parkinglots.ParkingLotListActivity">
+    tools:context="com.android.app.parkinglots.ParkingLotListActivity">
 
     <!--
     This layout is a two-pane layout for the ParkingLots
@@ -18,7 +18,7 @@
     -->
 
     <android.support.v7.widget.RecyclerView android:id="@+id/parkinglot_list"
-        android:name="com.example.dacianmujdar.parkinglots.ParkingLotListFragment"
+        android:name="com.android.app.parkinglots.ParkingLotListFragment"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="@dimen/item_width"
@@ -26,7 +26,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
-        tools:context="com.example.dacianmujdar.parkinglots.ParkingLotListActivity"
+        tools:context="com.android.app.parkinglots.ParkingLotListActivity"
         tools:listitem="@layout/parkinglot_list_content" />
 
     <FrameLayout
