@@ -8,13 +8,33 @@ import RequestListScreen from "./src/screens/RequestList";
 import CreateRequest from "./src/screens/CreateRequest";
 import {Login} from "./src/authentication/Login";
 import DetailsRequest from "./src/screens/DetailsRequest";
+import ChartsScreen from "./src/screens/Charts";
 
+const mapNavigationStateParamsToProps = (MyComponent) => {
+    return class extends Component {
+        render() {
+            const {navigation: {state: {params}}} = this.props;
+            return <MyComponent {...params}  requestsList="ceva" {...this.props} />
+        }
+    }
+};
+
+// //used to set up a screen with several tabs
+// const MainScreenNavigator = TabNavigator({
+//     'Requests': {screen: RequestListScreen},
+//     'Create Request': {screen: CreateRequest},
+//     // 'Login': {screen: Login},
+// });
 
 //used to set up a screen with several tabs
-const MainScreenNavigator = TabNavigator({
+const NormalUserScreenNavigator = TabNavigator({
     'Requests': {screen: RequestListScreen},
-    'Create Request': {screen: CreateRequest},
-    // 'Login': {screen: Login},
+    'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
+});
+const AdminScreenNavigator = TabNavigator({
+    'Requests': {screen: RequestListScreen},
+    'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
+    'Statistics': {screen: ChartsScreen},
 });
 
 //provides a way for your app to transition between screens where each new screen is placed on top of a stack
@@ -29,11 +49,29 @@ const MainApp = StackNavigator({
         }),
     },
 
-    MainScreenNavigator: {
-        screen: MainScreenNavigator,
+    // MainScreenNavigator: {
+    //     screen: MainScreenNavigator,
+    //     navigationOptions: {
+    //         title: 'Parking System',
+    //         path: 'mainScreenNavigator/'
+    //     },
+    // },
+
+    // tab navigator for normal auth users
+    NormalUserScreenNavigator: {
+        screen: NormalUserScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'mainScreenNavigator/'
+            path: 'normalUserScreenNavigator/'
+        },
+    },
+
+    // tab navigator for admin users
+    AdminScreenNavigator: {
+        screen: AdminScreenNavigator,
+        navigationOptions: {
+            title: 'Parking System',
+            path: 'adminScreenNavigator/'
         },
     },
 

@@ -65,7 +65,8 @@ export class Login extends Component {
             );
         }else{
             /*TODO: authorize user( check username & password), user type: admin/ default user*/
-            nav.navigate('MainScreenNavigator')
+            //nav.navigate('NormalUserScreenNavigator');
+            nav.navigate('AdminScreenNavigator');
         }
     };
 

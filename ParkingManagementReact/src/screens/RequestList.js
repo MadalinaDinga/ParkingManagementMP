@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 import Swipeout from 'react-native-swipeout';
+// import { Button } from 'react-native-elements';
+// https://react-native-training.github.io/react-native-elements/API/buttons/ -> replace all buttons
 
 const listData = [
     {id:1, type: "Parking Spot Rental", requestedAt: "10:22 / 19.09.2016", period: "13.10.16 - 14.10.16", requestedFor: "Raul SABOU", createdBy: "Raul SABOU", requestedFrom: "Mihai ENACHE", status: "Approved"},
@@ -18,7 +20,6 @@ const listData = [
 ];
 
 export default class RequestListScreen extends Component {
-
     constructor(prop) {
         super(prop);
         this.state = {
@@ -80,7 +81,7 @@ export default class RequestListScreen extends Component {
             /*TODO: different fields depending on the request type*/
             <Swipeout right={swipeBtns}
                       autoClose={true}
-                      backgroundColor= 'pink'>
+                      backgroundColor= 'transparent'>
                 <TouchableHighlight
                     accessible={true}
                     accessibilityLabel={'Tap on the row to view & edit the request.'}
@@ -94,6 +95,10 @@ export default class RequestListScreen extends Component {
                             {"\n"}Status: {request.status}
                             {"\n"}
                         </Text>
+                        {/*<Button*/}
+                            {/*raised*/}
+                            {/*icon={{name: 'cached'}}*/}
+                            {/*title='BUTTON WITH ICON' />*/}
                     </View>
                 </TouchableHighlight>
             </Swipeout>
