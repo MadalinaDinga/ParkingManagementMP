@@ -4,9 +4,11 @@ import {
     Text,
     View,
     ActivityIndicator,
-    Button, Picker, TextInput
+    Picker, TextInput
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
+import {raisedButtonAttributes} from "../common/attributes";
+import {Button} from "react-native-elements";
 
 const requestTypes = [
     {"id": 1, "type": "Parking Spot Rental"},
@@ -112,10 +114,11 @@ export default class DetailsRequest extends Component {
             return (
                 <View>
                     <Text> The content is not available </Text>
-                    <Button title="Retry" onPress={() => {
-                        this.setState({loaded: 0});
-                        this.fetchData();
-                    }}/>
+                    <Button title="RETRY"
+                            onPress={() => {
+                                this.setState({loaded: 0});
+                                this.fetchData();}}
+                    />
                 </View>);
         }
         return (
@@ -170,13 +173,11 @@ export default class DetailsRequest extends Component {
                 />
 
                 <Button
-                    style={{fontSize: 20}}
+                    {... raisedButtonAttributes}
                     onPress={this.handleEditRequest.bind(this, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}
-                    title="Save changes"
+                    title="SAVE CHANGES"
                     color="#841584"
-                    accessible={true}
                     accessibilityLabel="Edit request"
-                    accessibilityComponentType="button"
                 />
             </View>
         );

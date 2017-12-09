@@ -4,11 +4,13 @@ import {
     Text,
     View,
     ActivityIndicator,
-    Button, TextInput, Picker,
+    TextInput, Picker,
     Share,
     Alert,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
+import {raisedButtonAttributes} from "../common/attributes";
+import {Button} from "react-native-elements";
 
 const requestTypes = [
     {"id": 1, "type": "Parking Spot Rental"},
@@ -127,10 +129,11 @@ export default class CreateRequest extends Component {
             return (
                 <View style={styles.screen}>
                     <Text> The content is not available </Text>
-                    <Button title="Retry" onPress={() => {
-                        this.setState({loaded: 0});
-                        this.fetchData();
-                    }}/>
+                    <Button title="RETRY"
+                            onPress={() => {
+                                this.setState({loaded: 0});
+                                this.fetchData();}}
+                    />
                 </View>);
         }
         return (
@@ -178,14 +181,11 @@ export default class CreateRequest extends Component {
                 />
 
                 <Button
-                    style={{fontSize: 20}}
+                    {... raisedButtonAttributes}
+                    title="SEND REQUEST"
+                    accessibilityLabel="Send the request"
                     onPress={this.handleCreateRequest.bind(this,
                         this.state.selectedRequestType, this.state.receiverName, this.state.creatorName, this.state.messageFromCreator)}
-                    title="Create Request"
-                    color="#841584"
-                    accessible={true}
-                    accessibilityLabel="Send the request"
-                    accessibilityComponentType="button"
                 />
             </View>
         );

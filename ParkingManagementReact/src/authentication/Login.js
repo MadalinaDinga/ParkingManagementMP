@@ -4,10 +4,13 @@ import {
     Text,
     View,
     TextInput,
-    CheckBox, Button,
+    CheckBox,
     Alert,
 } from 'react-native';
 import {AsyncStorage} from 'react-native';
+import {Button} from "react-native-elements";
+import {raisedButtonAttributes} from "../common/attributes";
+import UsersAPI from "../api/LoginAPI";
 
 export class Login extends Component {
     constructor(props) {
@@ -15,7 +18,12 @@ export class Login extends Component {
         this.state = {
             username: '',
             password: '',
+            auth: false,
 
+            // the list of registered users
+            usersData: [],
+
+            // the checkbox is unchecked by default
             rememberUserChecked: false,
         };
     }
@@ -31,15 +39,39 @@ export class Login extends Component {
             this.setState({
                 password: result,
             })
-        })
+        });
+
+        this.fetchData();
+
     };
 
-    handleCheckBox = (rememberUserChecked, username, password) => {
-        console.log("Remember password checked - " + rememberUserChecked + " username: " + username + " password: " + password);
-        if (this.state.rememberUserChecked === false ) {
-            AsyncStorage.setItem('username', username);
-            AsyncStorage.setItem('password', password);
+    fetchData() {
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(listData),
+        //     loaded: 1,
+        // });
 
+        UsersAPI.getUsers()
+            .then((responseData) => {
+                if (responseData !== null) {
+                    this.setState({
+                        usersData: responseData,
+                        loaded: 1,
+                    });
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                this.showRetry();
+            })
+            .done();
+    }
+
+    handleCheckBox = () => {
+        // console.log("Remember me - " + !this.state.rememberUserChecked);
+        if (this.state.rememberUserChecked === false ) {
             this.setState({
                 rememberUserChecked: true
             });
@@ -49,6 +81,43 @@ export class Login extends Component {
             });
         }
     };
+
+    decideLoginInfoSavedToLocalStorage(username, password){
+        console.log("Remember me - " + this.state.rememberUserChecked);
+        // save username/ password into the async storage
+        if (this.state.rememberUserChecked === true ) {
+            AsyncStorage.setItem('username', username);
+            AsyncStorage.setItem('password', password);
+            console.log('Username: ', username,' and password: ', password,' saved to local storage');
+        }else{
+            AsyncStorage.removeItem('username');
+            AsyncStorage.removeItem('password');
+            console.log('Username: ', username,' and password: ', password,' not saved to local storage');
+        }
+    }
+
+    decideViewAccessByUserType(type, nav) {
+        if (type === 'admin'){
+            nav.navigate('AdminScreenNavigator');
+        }else{
+            nav.navigate('NormalUserScreenNavigator');
+        }
+        console.log("Logged in as ", type);
+    }
+
+    handleWrongUsernamePassword(auth){
+        // TODO: recover username, password
+        if (!auth){
+            Alert.alert(
+                'Auth Fail',
+                'Wrong username or password.',
+                [
+                    {text: 'Retry', onPress: () => console.log('Retry Pressed')},
+                ],
+                { cancelable: false }
+            );
+        }
+    }
 
     handleLogin = (username, password, nav) =>{
         console.log("Login - username: " + username + " password: " + password + " nav: " + nav);
@@ -64,9 +133,21 @@ export class Login extends Component {
                 { cancelable: false }
             );
         }else{
-            /*TODO: authorize user( check username & password), user type: admin/ default user*/
-            //nav.navigate('NormalUserScreenNavigator');
-            nav.navigate('AdminScreenNavigator');
+            for (let user of this.state.usersData){
+                // the given username & password are registered
+                if (user.username === this.state.username && user.password === this.state.password){
+
+                    this.state.auth = true;
+
+                    // decide whether to save the username & password to local storage
+                    this.decideLoginInfoSavedToLocalStorage(user.username, user.password);
+
+                    // different views depending on user type( admin/ default)
+                    this.decideViewAccessByUserType(user.type, nav);
+                }
+            }
+            // the given username & password not found
+            this.handleWrongUsernamePassword(this.state.auth);
         }
     };
 
@@ -114,16 +195,13 @@ export class Login extends Component {
                     style={{margin:10}}
                     value={this.state.rememberUserChecked}
                     accessibilityLabel="Select to save your username and password"
-                    onValueChange={this.handleCheckBox.bind(this, this.state.rememberUserChecked, this.state.username, this.state.password)}
+                    onValueChange={this.handleCheckBox.bind(this)}
                 />
 
                 <Button
-                    style={{fontSize: 20, margin:10}}
-                    title="Login"
-                    color="#841584"
-                    accessible={true}
+                    {... raisedButtonAttributes}
+                    title="LOGIN"
                     accessibilityLabel="Login"
-                    accessibilityComponentType="button"
                     onPress={this.handleLogin.bind(this,
                         this.state.username, this.state.password, nav)}
                 />

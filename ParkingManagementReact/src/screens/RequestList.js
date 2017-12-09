@@ -5,11 +5,12 @@ import {
     View,
     ListView,
     ActivityIndicator,
-    Button, TouchableHighlight,
+    TouchableHighlight,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 import Swipeout from 'react-native-swipeout';
-// import { Button } from 'react-native-elements';
+import {Button, Icon} from 'react-native-elements';
+import {iconAttributes} from "../common/attributes";
 // https://react-native-training.github.io/react-native-elements/API/buttons/ -> replace all buttons
 
 const listData = [
@@ -64,7 +65,7 @@ export default class RequestListScreen extends Component {
             .done();
     }
 
-    deleteRequest(){
+    deleteRequest(id){
 
     }
 
@@ -74,7 +75,7 @@ export default class RequestListScreen extends Component {
             text: 'Delete',
             backgroundColor: 'red',
             underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
-            onPress: () => { this.deleteRequest(request) }
+            onPress: () => { this.deleteRequest(request.id) }
         }];
 
         return (
@@ -87,18 +88,18 @@ export default class RequestListScreen extends Component {
                     accessibilityLabel={'Tap on the row to view & edit the request.'}
                     onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
                     <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
-                        <Text style={styles.listItem}
-                              accessible={true}
-                              accessibilityLabel="This is a request item">{request.id} - {request.type}
+                        <Text accessible={true}
+                              accessibilityLabel="This is a request item">
+                            {request.id} - {request.type}
                             {"\n"}Requested by: {request.requestedFor}
                             {"\n"}Requested from: {request.requestedFrom}
                             {"\n"}Status: {request.status}
                             {"\n"}
                         </Text>
-                        {/*<Button*/}
-                            {/*raised*/}
-                            {/*icon={{name: 'cached'}}*/}
-                            {/*title='BUTTON WITH ICON' />*/}
+                        <Icon
+                            {... iconAttributes}
+                            name='delete'
+                            onPress={this.deleteRequest(request.id)}/>
                     </View>
                 </TouchableHighlight>
             </Swipeout>
@@ -119,10 +120,12 @@ export default class RequestListScreen extends Component {
             return (
                 <View style={styles.screen}>
                     <Text> The content is not available </Text>
-                    <Button title="Retry" onPress={() => {
-                        this.setState({loaded: 0});
-                        this.fetchData();
-                    }}/>
+                    <Button title="RETRY"
+                            backgroundColor='#3f51b5'
+                            onPress={() => {
+                                this.setState({loaded: 0});
+                                this.fetchData();}}
+                    />
                 </View>);
         }
         return (
@@ -149,6 +152,8 @@ const styles = StyleSheet.create({
     listItemWrapper: {
         margin: 5,
         backgroundColor: '#B6C5D3',
+        flex: 1,
+        flexDirection: 'row',
     },
     activityIndicator: {
         height: 50,

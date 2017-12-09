@@ -19,18 +19,12 @@ const mapNavigationStateParamsToProps = (MyComponent) => {
     }
 };
 
-// //used to set up a screen with several tabs
-// const MainScreenNavigator = TabNavigator({
-//     'Requests': {screen: RequestListScreen},
-//     'Create Request': {screen: CreateRequest},
-//     // 'Login': {screen: Login},
-// });
-
 //used to set up a screen with several tabs
 const NormalUserScreenNavigator = TabNavigator({
     'Requests': {screen: RequestListScreen},
     'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
 });
+
 const AdminScreenNavigator = TabNavigator({
     'Requests': {screen: RequestListScreen},
     'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
@@ -48,14 +42,6 @@ const MainApp = StackNavigator({
             path: 'login/',
         }),
     },
-
-    // MainScreenNavigator: {
-    //     screen: MainScreenNavigator,
-    //     navigationOptions: {
-    //         title: 'Parking System',
-    //         path: 'mainScreenNavigator/'
-    //     },
-    // },
 
     // tab navigator for normal auth users
     NormalUserScreenNavigator: {

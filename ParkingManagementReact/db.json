@@ -35,10 +35,10 @@
     {"id":18, "type": "Parking Spot Rental", "requestedAt": "11:06/03.11.15", "period": "11:06/13.10.16 - 20:30/18.10.16", "requestedFor": "Mihai ANDRONACHE", "createdBy": "Mihai ANDRONACHE", "requestedFrom": "Mihai ENACHE", "parkingNo": 1, "status": "Pending"}
     ],
   "users": [
-    {"id":1, "username": "User1", "name": "Name1", "carNo": "CJ 06 BNI", "parkingNo": 20, "password": "pass"},
-    {"id":2, "username": "User2", "name": "Name2", "carNo": "BN 01 DFG", "parkingNo": 31, "password": "pass"},
-    {"id":3, "username": "User3", "name": "Name3", "carNo": "CJ 60 ABF", "parkingNo": 6, "password": "pass"},
-    {"id":4, "username": "User4", "name": "Name4", "carNo": "B 10 TVU", "parkingNo": 11, "password": "pass"},
-    {"id":5, "username": "User5", "name": "Name5", "carNo": "CJ 43 WAR", "parkingNo": 3, "password": "pass"}
+    {"id":1, "username": "User1", "name": "Name1", "carNo": "CJ 06 BNI", "parkingNo": 20, "password": "pass", "type": "admin"},
+    {"id":2, "username": "User2", "name": "Name2", "carNo": "BN 01 DFG", "parkingNo": 31, "password": "pass", "type": "default"},
+    {"id":3, "username": "User3", "name": "Name3", "carNo": "CJ 60 ABF", "parkingNo": 6, "password": "pass", "type": "default"},
+    {"id":4, "username": "User4", "name": "Name4", "carNo": "B 10 TVU", "parkingNo": 11, "password": "pass", "type": "admin"},
+    {"id":5, "username": "User5", "name": "Name5", "carNo": "CJ 43 WAR", "parkingNo": 3, "password": "pass", "type": "default"}
   ]
 }
