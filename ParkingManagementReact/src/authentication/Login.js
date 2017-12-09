@@ -106,7 +106,7 @@ export class Login extends Component {
     }
 
     handleWrongUsernamePassword(auth){
-        // TODO: recover username, password
+        // TODO: account recovery
         if (!auth){
             Alert.alert(
                 'Auth Fail',

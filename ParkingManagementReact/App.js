@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
-import {
-    StackNavigator,
-    TabNavigator,
-    DrawerNavigator,
-} from 'react-navigation';
+
 import RequestListScreen from "./src/screens/RequestList";
 import CreateRequest from "./src/screens/CreateRequest";
 import {Login} from "./src/authentication/Login";
 import DetailsRequest from "./src/screens/DetailsRequest";
 import ChartsScreen from "./src/screens/Charts";
+import {
+    StackNavigator,
+    TabNavigator
+} from "react-navigation";
 
 const mapNavigationStateParamsToProps = (MyComponent) => {
     return class extends Component {
@@ -66,6 +66,13 @@ const MainApp = StackNavigator({
         navigationOptions: ({navigation}) => ({
             title: `View Request`,
             path: 'request/:id',
+        }),
+    },
+    Requests: {
+        screen: RequestListScreen,
+        navigationOptions: ({navigation}) => ({
+            title: `Requests List`,
+            path: 'requests/',
         }),
     },
 });

@@ -5,13 +5,11 @@ import {
     View,
     ListView,
     ActivityIndicator,
-    TouchableHighlight,
+    TouchableNativeFeedback,
+    AsyncStorage,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
-import Swipeout from 'react-native-swipeout';
-import {Button, Icon} from 'react-native-elements';
-import {iconAttributes} from "../common/attributes";
-// https://react-native-training.github.io/react-native-elements/API/buttons/ -> replace all buttons
+import {Button} from 'react-native-elements';
 
 const listData = [
     {id:1, type: "Parking Spot Rental", requestedAt: "10:22 / 19.09.2016", period: "13.10.16 - 14.10.16", requestedFor: "Raul SABOU", createdBy: "Raul SABOU", requestedFrom: "Mihai ENACHE", status: "Approved"},
@@ -27,21 +25,23 @@ export default class RequestListScreen extends Component {
             dataSource: new ListView.DataSource({
                 rowHasChanged: (row1, row2) => row1 !== row2,
             }),
+            requestsData: [],
             loaded: 0,
         }
     }
 
     componentDidMount() {
-        this.fetchData();
+        // offline - working with local storage
+        this.fetchDataLocalStorage();
+
+        //TODO: async adapter( synchronization with the backend) OFFLINE SUPPORT
+
+        // // online - retrieve data from remote persistence
+        // // currently data is fetched from db.json
+        // this.fetchDataRemote();
     }
 
-    showRetry() {
-        this.setState({
-            loaded: 2,
-        });
-    }
-
-    fetchData() {
+    fetchDataRemote() {
         // this.setState({
         //     dataSource: this.state.dataSource.cloneWithRows(listData),
         //     loaded: 1,
@@ -51,9 +51,11 @@ export default class RequestListScreen extends Component {
             .then((responseData) => {
                 if (responseData !== null) {
                     this.setState({
+                        requestsData: responseData,
                         dataSource: this.state.dataSource.cloneWithRows(responseData),
                         loaded: 1,
                     });
+                    console.log('Requests data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
@@ -65,28 +67,48 @@ export default class RequestListScreen extends Component {
             .done();
     }
 
-    deleteRequest(id){
+    fetchDataLocalStorage() {
+        return  AsyncStorage.getItem('requestsData')
+            .then(req => JSON.parse(req))
+            .then(requestsLocal => {
+                this.setState({
+                    requestsData:requestsLocal,
+                    dataSource: this.state.dataSource.cloneWithRows(requestsLocal),
+                    loaded: 1,
+                });
+                console.log('Requests data retrieved from local storage.');
+            })
+            .catch(err => {
+                console.error(err);
+                console.log('Requests data could not be retrieved from local storage.');
+            })
+            .done()
+    }
 
+    componentWillUnmount() {
+        // save requests data to local storage before unmounting component
+        this.saveDataOnLocalStorage();
+    }
+
+    saveDataOnLocalStorage(){
+        return AsyncStorage.setItem('requestsData', JSON.stringify(this.state.requestsData))
+            .then(json => console.log('Requests data saved to local storage.'))
+            .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
+    }
+
+    showRetry() {
+        this.setState({
+            loaded: 2,
+        });
     }
 
     renderRequest(nav, request) {
-        // delete button on swipe
-        let swipeBtns = [{
-            text: 'Delete',
-            backgroundColor: 'red',
-            underlayColor: 'rgba(0, 0, 0, 1, 0.6)',
-            onPress: () => { this.deleteRequest(request.id) }
-        }];
-
         return (
-            /*TODO: different fields depending on the request type*/
-            <Swipeout right={swipeBtns}
-                      autoClose={true}
-                      backgroundColor= 'transparent'>
-                <TouchableHighlight
-                    accessible={true}
-                    accessibilityLabel={'Tap on the row to view & edit the request.'}
-                    onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
+            //TODO: different fields shown depending on the request type
+            <TouchableNativeFeedback
+                accessible={true}
+                accessibilityLabel={'Tap on the row to view & edit the request.'}
+                onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
                     <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
                         <Text accessible={true}
                               accessibilityLabel="This is a request item">
@@ -96,13 +118,8 @@ export default class RequestListScreen extends Component {
                             {"\n"}Status: {request.status}
                             {"\n"}
                         </Text>
-                        <Icon
-                            {... iconAttributes}
-                            name='delete'
-                            onPress={this.deleteRequest(request.id)}/>
                     </View>
-                </TouchableHighlight>
-            </Swipeout>
+            </TouchableNativeFeedback>
         );
     }
 
@@ -124,8 +141,7 @@ export default class RequestListScreen extends Component {
                             backgroundColor='#3f51b5'
                             onPress={() => {
                                 this.setState({loaded: 0});
-                                this.fetchData();}}
-                    />
+                                this.fetchDataRemote();}}/>
                 </View>);
         }
         return (
@@ -136,7 +152,6 @@ export default class RequestListScreen extends Component {
                     style={styles.listView}
                 />
             </View>
-
         );
     }
 }
@@ -154,6 +169,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#B6C5D3',
         flex: 1,
         flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     activityIndicator: {
         height: 50,

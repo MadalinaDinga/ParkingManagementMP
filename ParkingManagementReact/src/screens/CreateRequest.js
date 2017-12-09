@@ -7,30 +7,11 @@ import {
     TextInput, Picker,
     Share,
     Alert,
+    AsyncStorage,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 import {raisedButtonAttributes} from "../common/attributes";
 import {Button} from "react-native-elements";
-
-const requestTypes = [
-    {"id": 1, "type": "Parking Spot Rental"},
-    {"id": 2, "type": "Parking Spot Reservation"},
-    {"id": 3, "type": "Parking Subscription"},
-    {"id": 4, "type": "Cancel Subscription"},
-    {"id": 5, "type": "Cancel Reservation"},
-    {"id": 5, "type": "Quit Rental"},
-    {"id": 5, "type": "Drop out registration"}
-];
-
-const parkingNo = [
-    {"id": 1},
-    {"id": 2},
-    {"id": 3},
-    {"id": 4},
-    {"id": 5},
-    {"id": 6},
-    {"id": 7}
-];
 
 export default class CreateRequest extends Component {
     constructor(prop) {
@@ -40,12 +21,16 @@ export default class CreateRequest extends Component {
             requestType: "",
             receiverName: "",
             creatorName: "",
-            messageFromCreator: "",
+            creatorMessage: "",
 
             //the request types
             requestTypesData: [],
 
             inputData: [],
+
+            // sent confirmation
+            requestSent: false,
+            errorMessage: '',
 
             loaded: 0,
 
@@ -53,15 +38,10 @@ export default class CreateRequest extends Component {
     }
 
     componentDidMount() {
-        this.fetchData();
+        this.fetchDataRemote();
     }
 
-    fetchData(){
-        // this.setState({
-        //     requestTypesData: requestTypes,
-        //     loaded: 1,
-        // });
-
+    fetchDataRemote(){
         RequestsAPI.getRequestTypes()
             .then((responseData) => {
                 if (responseData !== null) {
@@ -69,6 +49,7 @@ export default class CreateRequest extends Component {
                         requestTypesData: responseData,
                         loaded: 1,
                     });
+                    console.log('Requests data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
@@ -80,8 +61,32 @@ export default class CreateRequest extends Component {
             .done();
     }
 
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    fetchDataLocalStorage() {
+        return  AsyncStorage.getItem('requestTypesData')
+            .then(req => JSON.parse(req))
+            .then(requestsTypes => {
+                this.setState({
+                    requestTypesData:requestsTypes,
+                    loaded: 1,
+                });
+                console.log('Requests data retrieved from local storage.');
+            })
+            .catch(err => {
+                console.error(err);
+                console.log('Requests data could not be retrieved from local storage.');
+            })
+            .done()
+    }
+
+    componentWillUnmount() {
+        // save data to local storage before unmounting component
+        this.saveDataOnLocalStorage();
+    }
+
+    saveDataOnLocalStorage(){
+        return AsyncStorage.setItem('requestTypesData', JSON.stringify(this.state.requestTypesData))
+            .then(json => console.log('Request Types data saved to local storage.'))
+            .catch(error => console.log('Saving Request Types data to local storage encountered a problem.'));
     }
 
     showRetry() {
@@ -90,22 +95,48 @@ export default class CreateRequest extends Component {
         });
     }
 
+    static handleSendEmailIntent(requestType, creatorName, receiverName, creatorMessage){
+        Share.share({
+            message: `${requestType} Request\n from ${creatorName}\n to  ${receiverName}\n Message:\n ${creatorMessage}`,
+            url: 'https://github.com/MadalinaDinga/ParkingManagementMP',
+            title: `New ${requestType}`
+        }, {
+            // Android only:
+            dialogTitle: 'New request',
+            // iOS only:1
+            excludedActivityTypes: [
+                'com.apple.UIKit.activity.PostToTwitter'
+            ]
+        });
+    }
+
+    addRequest(){
+
+    };
+
     handleCreateRequest = (requestType, receiverName, creatorName, creatorMessage) => {
-        console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "messageFromCreator: " + creatorMessage);
-        if (receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
-        // if (requestType!=="" && receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
-            Share.share({
-                message: `${requestType} Request\n from ${creatorName}\n to  ${receiverName}\n Message:\n ${creatorMessage}`,
-                url: 'https://github.com/MadalinaDinga/ParkingManagementMP',
-                title: `New ${requestType}`
-            }, {
-                // Android only:
-                dialogTitle: 'New request',
-                // iOS only:1
-                excludedActivityTypes: [
-                    'com.apple.UIKit.activity.PostToTwitter'
-                ]
+        console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "creatorMessage: " + creatorMessage);
+        if (requestType!=="" && receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
+            Alert.alert(
+                'Send email',
+                'Do you also want to send the request by email?',
+                [
+                    {text: 'YES', onPress: () => {
+                        console.log('YES pressed - sending email');
+                        CreateRequest.handleSendEmailIntent(requestType, creatorName, receiverName, creatorMessage);
+                    }},
+                    {text: 'NO', onPress: console.log("NO pressed"), style: 'cancel'},
+                ],
+                { cancelable: false }
+            );
+
+            // TODO: add request operation
+
+            this.setState({
+                requestSent: true,
             });
+            // after sending request, navigate to requests list page
+            this.props.navigation.navigate('Requests');
         }else{
             Alert.alert(
                 'Empty fields',
@@ -118,28 +149,54 @@ export default class CreateRequest extends Component {
         }
     };
 
-    render() {
-        if (this.state.loaded === 0) {
-            return (
-                <View style={styles.screen}>
-                    <Text> Please wait... </Text>
-                    <ActivityIndicator animating={true} style={styles.activityIndicator} size="large"/>
-                </View>);
-        } else if (this.state.loaded === 2) {
-            return (
-                <View style={styles.screen}>
-                    <Text> The content is not available </Text>
-                    <Button title="RETRY"
-                            onPress={() => {
-                                this.setState({loaded: 0});
-                                this.fetchData();}}
-                    />
-                </View>);
-        }
-        return (
-            <View style={styles.screen} accessibilityLiveRegion="assertive">
-                <Text style={styles.title}>New Request</Text>
+    handleResetRequestScreen = () =>{
+        this.setState({
+            requestType: "",
+            receiverName: "",
+            creatorName: "",
+            creatorMessage: "",
+        });
+    };
 
+    renderSendConfirmation(){
+        if (this.state.requestSent){
+            return(
+                <Text style={styles.createConfirmation}>Request successfully sent!</Text>
+            );
+        }
+        if (this.state.errorMessage.length > 0){
+            return(
+                <Text style={styles.createError}>{ this.state.errorMessage.length }</Text>
+            );
+        }
+    }
+
+    renderActionButtons(){
+        return(
+            <View>
+                <Button
+                    {... raisedButtonAttributes}
+                    title="SEND REQUEST"
+                    icon={{name: 'send'}}
+                    accessibilityLabel="Send the request"
+                    onPress={this.handleCreateRequest.bind(this,
+                        this.state.requestType, this.state.receiverName, this.state.creatorName, this.state.creatorMessage)}
+                />
+                <Button
+                    {... raisedButtonAttributes}
+                    title="RESET"
+                    icon={{name: 'autorenew'}}
+                    accessibilityLabel="Reset request input"
+                    onPress={this.handleResetRequestScreen.bind(this)}
+                />
+            </View>
+        );
+    }
+
+    renderCreateRequestForm(){
+        //TODO: the picker should show a default message 'Choose request type'
+        return(
+            <View>
                 <Picker
                     selectedValue={this.state.requestType}
                     onValueChange={(itemValue) => this.setState({requestType: itemValue})}
@@ -179,26 +236,55 @@ export default class CreateRequest extends Component {
                     accessible={true}
                     accessibilityLabel="Give a comment"
                 />
+            </View>
+        );
+    }
 
-                <Button
-                    {... raisedButtonAttributes}
-                    title="SEND REQUEST"
-                    accessibilityLabel="Send the request"
-                    onPress={this.handleCreateRequest.bind(this,
-                        this.state.selectedRequestType, this.state.receiverName, this.state.creatorName, this.state.messageFromCreator)}
-                />
+    render() {
+        if (this.state.loaded === 0) {
+            return (
+                <View style={styles.screen}>
+                    <Text> Please wait... </Text>
+                    <ActivityIndicator animating={true} style={styles.activityIndicator} size="large"/>
+                </View>);
+        } else if (this.state.loaded === 2) {
+            return (
+                <View style={styles.screen}>
+                    <Text> The content is not available </Text>
+                    <Button title="RETRY"
+                            onPress={() => {
+                                this.setState({loaded: 0});
+                                this.fetchDataRemote();}}
+                    />
+                </View>);
+        }
+        return (
+            <View style={styles.screen} accessibilityLiveRegion="assertive">
+                <Text style={styles.title}>New Request</Text>
+                {this.renderSendConfirmation()}
+
+                {this.renderCreateRequestForm()}
+
+                {this.renderActionButtons()}
             </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    screen:{
-
-    },
     title: {
         fontWeight:'bold',
         fontSize:20,
+    },
+    createConfirmation: {
+        'fontWeight': 'bold',
+        'color': 'green',
+        'fontSize': 12,
+    },
+    createError: {
+        'fontWeight': 'bold',
+        'color': 'red',
+        'fontSize': 12,
     },
     textInput: {
         height: 40,

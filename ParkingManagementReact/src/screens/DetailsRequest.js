@@ -4,7 +4,9 @@ import {
     Text,
     View,
     ActivityIndicator,
-    Picker, TextInput
+    Picker, TextInput,
+    Alert,
+    AsyncStorage,
 } from 'react-native';
 import RequestsAPI from "../api/RequestsApi";
 import {raisedButtonAttributes} from "../common/attributes";
@@ -34,6 +36,7 @@ export default class DetailsRequest extends Component {
     constructor(prop) {
         super(prop);
         this.state = {
+            // the edited/ shown request
             requestData: "",
 
             //picker for request type
@@ -80,6 +83,7 @@ export default class DetailsRequest extends Component {
             })
             .done();
 
+        // for the type picker
         RequestsAPI.getRequestTypes()
             .then((responseData) => {
                 if (responseData !== null) {
@@ -98,10 +102,115 @@ export default class DetailsRequest extends Component {
             .done();
     }
 
-    handleEditRequest = (requestPeriod, requestType, comment) =>{
+    handleEdit = (requestPeriod, requestType, comment) =>{
         console.log("Edited data - " + " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
         //TODO: POST - edit data
     };
+
+    handleDelete = (id) =>{
+        console.log('Request with id ',id, ' marked for deletion');
+        Alert.alert(
+            'Empty fields',
+            'Username & password can not be empty.',
+            [{
+                text: 'Yes',
+                onPress: () => {
+                    console.log('Delete Pressed');
+                    //AsyncStorage.removeItem('requests');
+                }
+            },],
+            { cancelable: true }
+        );
+        //TODO: perform delete
+    };
+
+    renderRequestEditableInfo(){
+        //TODO: render info depending on request type( different info is shown)
+        return(
+        <View>
+            <Text>Request type( editable):</Text>
+            <Picker
+                selectedValue={this.state.selectedRequestType}
+                onValueChange={(itemValue, itemIndex) => this.setState({selectedRequestType: itemValue})}
+                accessible={true}
+                accessibilityLabel="Choose request type">
+                {this.state.requestTypes.map( (row, index) => (
+                        <Picker.Item key={index} label={row.type} value={row.type} />
+                    )
+                )}
+            </Picker>
+
+            {/*TODO: different fields depending on the request type*/}
+            {/*TODO: make the editable/ not editable text inputs more suggestive*/}
+
+            <Text>To:</Text>
+            <TextInput
+                style={styles.textInput}
+                value={this.state.requestData.requestedFrom}
+            />
+
+            <Text>From:</Text>
+            <TextInput
+                style={styles.textInput}
+                value={this.state.requestData.createdBy}
+            />
+
+            <Text>Period( editable):</Text>
+            <TextInput
+                style={styles.textInput}
+                onChangeText={(text) => this.setState({requestPeriod: text})}
+                value={this.state.requestPeriod}
+                accessibilityLabel="Change request period"
+            />
+
+            <Text>Comment( editable):</Text>
+            <TextInput
+                style={styles.textInput}
+                onChangeText={(text) => this.setState({comment: text})}
+                value={this.state.comment}
+                accessibilityLabel="Change your comment"
+            />
+
+            <Text>Status:</Text>
+            <TextInput
+                style={styles.textInput}
+                value={this.state.requestData.status}
+            />
+
+        </View>
+        );
+    }
+
+    renderActionButtons(){
+        //TODO: check admin/ default user
+        // Only a default user can create requests
+        // A default user can accept/ reject the requests that are addressed to him + can view only his own requests
+        // An admin can view everyone's requests + accept/ reject the requests sent to him
+        return(
+            <View>
+                <Button
+                    {... raisedButtonAttributes}
+                    title="SAVE CHANGES"
+                    icon={{name: 'save'}}
+                    accessibilityLabel="Edit request"
+                    onPress={this.handleEdit.bind(this, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}/>
+
+                <Button
+                    {... raisedButtonAttributes}
+                    title="DELETE"
+                    icon={{name: 'delete'}}
+                    accessibilityLabel="Delete request"
+                    onPress={this.handleDelete.bind(this.state.requestData.id)}/>
+
+                {/*<Button
+                    {... raisedButtonAttributes}
+                    title="BACK"
+                    icon={{name: 'navigate-before'}}
+                    accessibilityLabel="Return to requests page"
+                    onPress={() => this.props.navigation.navigate('Requests')}/>*/}
+            </View>
+        );
+    }
 
     render() {
         if (this.state.loaded === 0) {
@@ -123,62 +232,9 @@ export default class DetailsRequest extends Component {
         }
         return (
             <View  accessibilityLiveRegion="assertive">
-                <Text>Request type( editable):</Text>
-                <Picker
-                    selectedValue={this.state.selectedRequestType}
-                    onValueChange={(itemValue, itemIndex) => this.setState({selectedRequestType: itemValue})}
-                    accessible={true}
-                    accessibilityLabel="Choose request type">
-                    {this.state.requestTypes.map( (row, index) => (
-                            <Picker.Item key={index} label={row.type} value={row.type} />
-                        )
-                    )}
-                </Picker>
+                {this.renderRequestEditableInfo()}
 
-                {/*TODO: different fields depending on the request type*/}
-                {/*TODO: make the editable/ not editable text inputs more suggestive*/}
-
-                <Text>To:</Text>
-                <TextInput
-                    style={styles.textInput}
-                    value={this.state.requestData.requestedFrom}
-                />
-
-                <Text>From:</Text>
-                <TextInput
-                    style={styles.textInput}
-                    value={this.state.requestData.createdBy}
-                />
-
-                <Text>Period( editable):</Text>
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={(text) => this.setState({requestPeriod: text})}
-                    value={this.state.requestPeriod}
-                    accessibilityLabel="Change request period"
-                />
-
-                <Text>Comment( editable):</Text>
-                <TextInput
-                    style={styles.textInput}
-                    onChangeText={(text) => this.setState({comment: text})}
-                    value={this.state.comment}
-                    accessibilityLabel="Change your comment"
-                />
-
-                <Text>Status:</Text>
-                <TextInput
-                    style={styles.textInput}
-                    value={this.state.requestData.status}
-                />
-
-                <Button
-                    {... raisedButtonAttributes}
-                    onPress={this.handleEditRequest.bind(this, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}
-                    title="SAVE CHANGES"
-                    color="#841584"
-                    accessibilityLabel="Edit request"
-                />
+                { this.renderActionButtons() }
             </View>
         );
     }

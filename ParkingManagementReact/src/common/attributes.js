@@ -5,6 +5,7 @@ export const raisedButtonAttributes = {
     ['backgroundColor']: '#3f51b5',
     ['containerViewStyle']: {
         'borderRadius':5,
+        'margin':10,
 
     },
     ['buttonStyle']: {
@@ -17,8 +18,8 @@ export const raisedButtonAttributes = {
 
 export const iconAttributes = {
     ['raised']: true,
-    ['color']: '#3f51b5',
+    ['color']: '#FFF',
     ['containerStyle']: {
-        'backgroundColor':'transparent',
+        'backgroundColor':'#3f51b5',
     },
 };

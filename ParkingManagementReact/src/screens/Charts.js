@@ -13,7 +13,7 @@ export default class ChartsScreen extends Component {
     }
 
     componentDidMount() {
-        //this.fetchData();
+        //this.fetchDataRemote();
     }
 
     sleep(ms) {
