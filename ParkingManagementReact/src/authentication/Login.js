@@ -11,6 +11,7 @@ import {AsyncStorage} from 'react-native';
 import {Button} from "react-native-elements";
 import {raisedButtonAttributes} from "../common/attributes";
 import UsersAPI from "../api/LoginAPI";
+import RequestsAPI from "../api/RequestsApi";
 
 export class Login extends Component {
     constructor(props) {
@@ -22,6 +23,10 @@ export class Login extends Component {
 
             // the list of registered users
             usersData: [],
+
+            // all requests data
+            allRequestsData: [],
+            loaded: 0,
 
             // the checkbox is unchecked by default
             rememberUserChecked: false,
@@ -41,11 +46,11 @@ export class Login extends Component {
             })
         });
 
-        this.fetchData();
+        this.fetchUsersDataRemote();
 
     };
 
-    fetchData() {
+    fetchUsersDataRemote() {
         // this.setState({
         //     dataSource: this.state.dataSource.cloneWithRows(listData),
         //     loaded: 1,
@@ -67,6 +72,53 @@ export class Login extends Component {
                 this.showRetry();
             })
             .done();
+    }
+
+    showRetry() {
+        this.setState({
+            loaded: 2,
+        });
+    }
+
+    fetchAllRequestsDataRemote() {
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(listData),
+        //     loaded: 1,
+        // });
+
+        RequestsAPI.getRequests()
+            .then((responseData) => {
+                if (responseData !== null) {
+                    this.setState({
+                        allRequestsData: responseData,
+                        loaded: 1,
+                    });
+                    console.log('Login - Requests data retrieved from remote storage.');
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                this.showRetry();
+            })
+            .done();
+    }
+
+    fetchAllRequestsDataLocalStorage() {
+        return  AsyncStorage.getItem('allRequestsData')
+            .then(req => JSON.parse(req))
+            .then(requestsLocal => {
+                this.setState({
+                    allRequestsData:requestsLocal,
+                });
+                console.log('Login - Requests data retrieved from local storage.');
+            })
+            .catch(err => {
+                console.error(err);
+                console.log('Login - Requests data could not be retrieved from local storage.');
+            })
+            .done()
     }
 
     handleCheckBox = () => {
@@ -98,8 +150,20 @@ export class Login extends Component {
 
     decideViewAccessByUserType(type, nav) {
         if (type === 'admin'){
-            nav.navigate('AdminScreenNavigator');
+            // an admin can view all requests from all registered users
+            this.fetchAllRequestsDataLocalStorage();
+            if ( this.state.allRequestsData === null ) {
+                this.fetchAllRequestsDataRemote();
+            }
+            //TODO: add loading gif( fix loading)
+
+            nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`})
         }else{
+            //TODO: fetch user's requests
+            // a user can only view his requests
+            // this.fetchUserRequestsDataLocalStorage();
+
+            //TODO: pass requests data to the screen navigator
             nav.navigate('NormalUserScreenNavigator');
         }
         console.log("Logged in as ", type);

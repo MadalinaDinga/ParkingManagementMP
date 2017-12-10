@@ -31,14 +31,22 @@ export default class RequestListScreen extends Component {
     }
 
     componentDidMount() {
+        let receivedData = JSON.parse(this.props.navigation.state.params.r);
+        this.setState({
+            requestsData: receivedData,
+            dataSource: this.state.dataSource.cloneWithRows(receivedData),
+            loaded: 1,
+        });
+        console.log('Request list - Received requests data');
+
         // offline - working with local storage
-        this.fetchDataLocalStorage();
+        // this.fetchDataLocalStorage();
 
         //TODO: async adapter( synchronization with the backend) OFFLINE SUPPORT
 
-        // // online - retrieve data from remote persistence
-        // // currently data is fetched from db.json
-        // this.fetchDataRemote();
+        // online - retrieve data from remote persistence
+        // currently data is fetched from db.json
+        //this.fetchDataRemote();
     }
 
     fetchDataRemote() {
@@ -55,7 +63,7 @@ export default class RequestListScreen extends Component {
                         dataSource: this.state.dataSource.cloneWithRows(responseData),
                         loaded: 1,
                     });
-                    console.log('Requests data retrieved from remote storage.');
+                    console.log('Login - Requests data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
@@ -68,7 +76,7 @@ export default class RequestListScreen extends Component {
     }
 
     fetchDataLocalStorage() {
-        return  AsyncStorage.getItem('requestsData')
+        return  AsyncStorage.getItem('allRequestsData')
             .then(req => JSON.parse(req))
             .then(requestsLocal => {
                 this.setState({
@@ -76,11 +84,11 @@ export default class RequestListScreen extends Component {
                     dataSource: this.state.dataSource.cloneWithRows(requestsLocal),
                     loaded: 1,
                 });
-                console.log('Requests data retrieved from local storage.');
+                console.log('RequestList - Requests data retrieved from local storage.');
             })
             .catch(err => {
                 console.error(err);
-                console.log('Requests data could not be retrieved from local storage.');
+                console.log('RequestList - Requests data could not be retrieved from local storage.');
             })
             .done()
     }
@@ -91,7 +99,7 @@ export default class RequestListScreen extends Component {
     }
 
     saveDataOnLocalStorage(){
-        return AsyncStorage.setItem('requestsData', JSON.stringify(this.state.requestsData))
+        return AsyncStorage.setItem('allRequestsData', JSON.stringify(this.state.allRequestsData))
             .then(json => console.log('Requests data saved to local storage.'))
             .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
     }

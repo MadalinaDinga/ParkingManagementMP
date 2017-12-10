@@ -38,7 +38,12 @@ export default class CreateRequest extends Component {
     }
 
     componentDidMount() {
-        this.fetchDataRemote();
+        // offline - working with local storage
+        this.fetchDataLocalStorage();
+
+        // online - retrieve data from remote persistence
+        // currently data is fetched from db.json
+        // this.fetchDataRemote();
     }
 
     fetchDataRemote(){
@@ -49,7 +54,7 @@ export default class CreateRequest extends Component {
                         requestTypesData: responseData,
                         loaded: 1,
                     });
-                    console.log('Requests data retrieved from remote storage.');
+                    console.log('Login - Requests Types data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
@@ -69,11 +74,11 @@ export default class CreateRequest extends Component {
                     requestTypesData:requestsTypes,
                     loaded: 1,
                 });
-                console.log('Requests data retrieved from local storage.');
+                console.log('CreateRequest - Requests data retrieved from local storage.');
             })
             .catch(err => {
                 console.error(err);
-                console.log('Requests data could not be retrieved from local storage.');
+                console.log('CreateRequest - Requests data could not be retrieved from local storage.');
             })
             .done()
     }
@@ -85,8 +90,8 @@ export default class CreateRequest extends Component {
 
     saveDataOnLocalStorage(){
         return AsyncStorage.setItem('requestTypesData', JSON.stringify(this.state.requestTypesData))
-            .then(json => console.log('Request Types data saved to local storage.'))
-            .catch(error => console.log('Saving Request Types data to local storage encountered a problem.'));
+            .then(json => console.log('CreateRequest - Request Types data saved to local storage.'))
+            .catch(error => console.log('CreateRequest - Saving Request Types data to local storage encountered a problem.'));
     }
 
     showRetry() {

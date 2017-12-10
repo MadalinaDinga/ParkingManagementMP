@@ -10,11 +10,11 @@ import {
     TabNavigator
 } from "react-navigation";
 
-const mapNavigationStateParamsToProps = (MyComponent) => {
+const mapNavigationStateParamsToPropsAdmin = (MyComponent) => {
     return class extends Component {
         render() {
             const {navigation: {state: {params}}} = this.props;
-            return <MyComponent {...params}  requestsList="ceva" {...this.props} />
+            return <MyComponent {...params}  {...this.props} />
         }
     }
 };
@@ -22,12 +22,12 @@ const mapNavigationStateParamsToProps = (MyComponent) => {
 //used to set up a screen with several tabs
 const NormalUserScreenNavigator = TabNavigator({
     'Requests': {screen: RequestListScreen},
-    'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
+    'Create Request': {screen: CreateRequest},
 });
 
 const AdminScreenNavigator = TabNavigator({
     'Requests': {screen: RequestListScreen},
-    'Create Request': {screen: mapNavigationStateParamsToProps(CreateRequest)},
+    'Create Request': {screen: CreateRequest},
     'Statistics': {screen: ChartsScreen},
 });
 
@@ -43,6 +43,8 @@ const MainApp = StackNavigator({
         }),
     },
 
+    //TODO: change return button into left menu( log out, my account, other stuff... )
+
     // tab navigator for normal auth users
     NormalUserScreenNavigator: {
         screen: NormalUserScreenNavigator,
@@ -57,13 +59,13 @@ const MainApp = StackNavigator({
         screen: AdminScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'adminScreenNavigator/'
+            path: 'adminScreenNavigator/:r'
         },
     },
 
     Details: {
         screen: DetailsRequest,
-        navigationOptions: ({navigation}) => ({
+        navigationOptions: ({
             title: `View Request`,
             path: 'request/:id',
         }),
