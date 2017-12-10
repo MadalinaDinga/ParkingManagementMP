@@ -41,12 +41,47 @@ export default class RequestListScreen extends Component {
 
         // offline - working with local storage
         // this.fetchDataLocalStorage();
-
-        //TODO: async adapter( synchronization with the backend) OFFLINE SUPPORT
-
+        //
+        // TODO: async adapter( synchronization with the backend) OFFLINE SUPPORT
+        //
         // online - retrieve data from remote persistence
         // currently data is fetched from db.json
-        //this.fetchDataRemote();
+        // this.fetchDataRemote();
+    }
+
+    // update the state in response to prop changes
+    // when a new request is created, the data source and the request list are updated
+    // when the app closes, the changes are saved to the local storage
+    componentWillReceiveProps(nextProps){
+        if (this.props.navigation.state.params.newRequest !== nextProps.navigation.state.params.newRequest) {
+            console.log(`RequestList - Received new request:\n ${nextProps.navigation.state.params.newRequest}`);
+
+            // newRequest is a JSON object
+            let newRequest = JSON.parse(nextProps.navigation.state.params.newRequest);
+            newRequest["id"] = this.state.requestsData.length + 1;
+
+            console.log(`RequestList - New request:\n ${newRequest}`);
+            this.state.requestsData.push(newRequest);
+            console.log(`RequestList - New requests data:\n ${this.state.requestsData}`);
+            this.addNewRequestToDataSource(this.state.requestsData);
+        }
+
+        if (this.props.navigation.state.params.editedData !== nextProps.navigation.state.params.editedData){
+            console.log(`RequestList - Received editedData:\n ${nextProps.navigation.state.params.editedData}`);
+
+        }
+
+        if (this.props.navigation.state.params.deletedId !== nextProps.navigation.state.params.deletedId){
+            console.log(`RequestList - Received deletedId:\n ${nextProps.navigation.state.params.deletedId}`);
+
+        }
+    }
+
+    addNewRequestToDataSource(newDS){
+        this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(newDS),
+            loaded: 1,
+        });
     }
 
     fetchDataRemote() {
@@ -93,16 +128,16 @@ export default class RequestListScreen extends Component {
             .done()
     }
 
-    componentWillUnmount() {
-        // save requests data to local storage before unmounting component
-        this.saveDataOnLocalStorage();
-    }
-
-    saveDataOnLocalStorage(){
-        return AsyncStorage.setItem('allRequestsData', JSON.stringify(this.state.allRequestsData))
-            .then(json => console.log('Requests data saved to local storage.'))
-            .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
-    }
+    // componentWillUnmount() {
+    //     // save requests data to local storage before unmounting component
+    //     this.saveDataOnLocalStorage();
+    // }
+    //
+    // saveDataOnLocalStorage(){
+    //     return AsyncStorage.setItem('allRequestsData', JSON.stringify(this.state.allRequestsData))
+    //         .then(json => console.log('Requests data saved to local storage.'))
+    //         .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
+    // }
 
     showRetry() {
         this.setState({
@@ -116,7 +151,7 @@ export default class RequestListScreen extends Component {
             <TouchableNativeFeedback
                 accessible={true}
                 accessibilityLabel={'Tap on the row to view & edit the request.'}
-                onPress={() => nav.navigate('Details', {id: `${request.id}`})}>
+                onPress={() => nav.navigate('Details', {requestData: `${JSON.stringify(request)}`})}>
                     <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
                         <Text accessible={true}
                               accessibilityLabel="This is a request item">
@@ -133,6 +168,12 @@ export default class RequestListScreen extends Component {
 
     render() {
         let nav = this.props.navigation;
+        if (this.props.navigation.state.params.newRequest !== undefined)
+        console.log(`RequestList - Received new request data:\n ${JSON.parse(this.props.navigation.state.params.newRequest)}`);
+        if (this.props.navigation.state.params.editedData !== undefined)
+        console.log(`RequestList - Received edited data:\n ${JSON.parse(this.props.navigation.state.params.editedData)}`);
+        if (this.props.navigation.state.params.deletedId !== undefined)
+        console.log(`RequestList - Received deletedId:\n ${Json.parse(this.props.navigation.state.params.deletedId)}`);
 
         if (this.state.loaded === 0) {
             return (

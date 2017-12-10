@@ -39,11 +39,11 @@ export default class CreateRequest extends Component {
 
     componentDidMount() {
         // offline - working with local storage
-        this.fetchDataLocalStorage();
-
-        // online - retrieve data from remote persistence
-        // currently data is fetched from db.json
-        // this.fetchDataRemote();
+        //if (this.fetchDataLocalStorage() === null){
+            // online - retrieve data from remote persistence
+            // currently data is fetched from db.json
+            this.fetchDataRemote();
+        //}
     }
 
     fetchDataRemote(){
@@ -74,11 +74,13 @@ export default class CreateRequest extends Component {
                     requestTypesData:requestsTypes,
                     loaded: 1,
                 });
-                console.log('CreateRequest - Requests data retrieved from local storage.');
+                console.log('CreateRequest - Requests Types data retrieved from local storage.');
+                return requestsTypes;
             })
             .catch(err => {
                 console.error(err);
-                console.log('CreateRequest - Requests data could not be retrieved from local storage.');
+                console.log('CreateRequest - Requests Types data could not be retrieved from local storage.');
+                return null;
             })
             .done()
     }
@@ -115,12 +117,21 @@ export default class CreateRequest extends Component {
         });
     }
 
-    addRequest(){
-
+    addRequestToLocalStorage(requestType, receiverName, creatorName, creatorMessage){
+        let newReq = {
+            id: -1,
+            type: requestType,
+            comment: creatorMessage,
+            requestedFrom: receiverName,
+            requestedFor: creatorName,
+            requestPeriod: new Date().getDate(),
+            status: "Pending"
+        };
+        this.props.navigation.navigate('Requests', {newRequest: `${JSON.stringify(newReq)}`})
     };
 
     handleCreateRequest = (requestType, receiverName, creatorName, creatorMessage) => {
-        console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "creatorMessage: " + creatorMessage);
+        // console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "creatorMessage: " + creatorMessage);
         if (requestType!=="" && receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
             Alert.alert(
                 'Send email',
@@ -135,7 +146,8 @@ export default class CreateRequest extends Component {
                 { cancelable: false }
             );
 
-            // TODO: add request operation
+            // add request local operation
+            this.addRequestToLocalStorage(requestType, receiverName, creatorName, creatorMessage);
 
             this.setState({
                 requestSent: true,
@@ -284,12 +296,12 @@ const styles = StyleSheet.create({
     createConfirmation: {
         'fontWeight': 'bold',
         'color': 'green',
-        'fontSize': 12,
+        'fontSize': 20,
     },
     createError: {
         'fontWeight': 'bold',
         'color': 'red',
-        'fontSize': 12,
+        'fontSize': 20,
     },
     textInput: {
         height: 40,

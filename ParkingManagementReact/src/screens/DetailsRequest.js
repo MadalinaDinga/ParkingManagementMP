@@ -44,6 +44,7 @@ export default class DetailsRequest extends Component {
             requestTypes: [],
 
             //input fields state - the request type, receiver name, request period and message are editable
+            id: "",
             requestType: "",
             requestPeriod: "",
             comment: "",
@@ -53,7 +54,21 @@ export default class DetailsRequest extends Component {
     }
 
     componentDidMount() {
-        this.fetchData();
+        // request types
+        this.fetchDataLocalStorage();
+        // this.fetchDataRemote();
+
+        // the request data is sent through navigation props
+        let requestData = JSON.parse(this.props.navigation.state.params.requestData);
+        console.log(`DetailsRequest - request data ${requestData}`);
+        this.setState({
+            requestData: requestData,
+            id: requestData.id,
+            selectedRequestType: requestData.type,
+            requestPeriod: requestData.period,
+            comment:requestData.comment,
+            loaded: 1,
+        });
     }
 
     showRetry() {
@@ -62,27 +77,12 @@ export default class DetailsRequest extends Component {
         });
     }
 
-    fetchData(){
-        RequestsAPI.getRequestsById(this.props.navigation.state.params.id)
-            .then((request) => {
-                if (request !== null) {
-                    this.setState({
-                        requestData: request,
-                        selectedRequestType: request.type,
-                        requestPeriod: request.period,
-                        comment:request.comment,
-                        loaded: 1,
-                    });
-                } else {
-                    this.showRetry();
-                }
-            })
-            .catch((error) => {
-                console.log('Message::ERROR:', error);
-                this.showRetry();
-            })
-            .done();
+    // fetch from remote storage
+    fetchDataRemote(){
+        this.fetchRequestTypesRemote();
+    }
 
+    fetchRequestTypesRemote(){
         // for the type picker
         RequestsAPI.getRequestTypes()
             .then((responseData) => {
@@ -102,26 +102,72 @@ export default class DetailsRequest extends Component {
             .done();
     }
 
-    handleEdit = (requestPeriod, requestType, comment) =>{
-        console.log("Edited data - " + " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
-        //TODO: POST - edit data
+    fetchRequestByIdRemote() {
+        RequestsAPI.getRequestsById(this.props.navigation.state.params.id)
+            .then((request) => {
+                if (request !== null) {
+                    this.setState({
+                        requestData: request,
+                        selectedRequestType: request.type,
+                        requestPeriod: request.period,
+                        comment:request.comment,
+                        loaded: 1,
+                    });
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((error) => {
+                console.log('Message::ERROR:', error);
+                this.showRetry();
+            })
+            .done();
+    }
+
+    //fetch from local storage
+    fetchDataLocalStorage() {
+        this.fetchRequestTypesLocalStorage();
+    }
+
+    fetchRequestTypesLocalStorage(){
+        return AsyncStorage.getItem('requestTypesData')
+            .then(req => JSON.parse(req))
+            .then(requestsTypes => {
+                this.setState({
+                    requestTypes: requestsTypes,
+                    loaded: 1,
+                });
+                console.log('CreateRequest - Request Types data retrieved from local storage.');
+            })
+            .catch(err => {
+                console.error(err);
+                console.log('CreateRequest - Request Types data could not be retrieved from local storage.');
+            })
+            .done()
+    }
+
+    handleEdit = (id, requestPeriod, requestType, comment) =>{
+        console.log('Clicked!');
+        console.log("Edited data - " + "id: " + id +  " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
+        if( comment === undefined){
+            comment = "";
+        }
+        // perform data edit
+        let editedData = {
+            id: id,
+            type: requestType,
+            period: requestPeriod,
+            comment: comment,
+        };
+        this.props.navigation.navigate('Requests', {editedData: `${JSON.stringify(editedData)}`})
     };
 
     handleDelete = (id) =>{
+        console.log('Clicked!');
         console.log('Request with id ',id, ' marked for deletion');
-        Alert.alert(
-            'Empty fields',
-            'Username & password can not be empty.',
-            [{
-                text: 'Yes',
-                onPress: () => {
-                    console.log('Delete Pressed');
-                    //AsyncStorage.removeItem('requests');
-                }
-            },],
-            { cancelable: true }
-        );
-        //TODO: perform delete
+
+        // perform delete
+        this.props.navigation.navigate('Requests', {deletedId: `${JSON.stringify(id)}`})
     };
 
     renderRequestEditableInfo(){
@@ -193,7 +239,7 @@ export default class DetailsRequest extends Component {
                     title="SAVE CHANGES"
                     icon={{name: 'save'}}
                     accessibilityLabel="Edit request"
-                    onPress={this.handleEdit.bind(this, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}/>
+                    onPress={this.handleEdit.bind(this, this.state.id, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}/>
 
                 <Button
                     {... raisedButtonAttributes}
@@ -226,7 +272,7 @@ export default class DetailsRequest extends Component {
                     <Button title="RETRY"
                             onPress={() => {
                                 this.setState({loaded: 0});
-                                this.fetchData();}}
+                                this.fetchDataRemote();}}
                     />
                 </View>);
         }

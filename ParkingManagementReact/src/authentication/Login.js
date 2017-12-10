@@ -12,6 +12,7 @@ import {Button} from "react-native-elements";
 import {raisedButtonAttributes} from "../common/attributes";
 import UsersAPI from "../api/LoginAPI";
 import RequestsAPI from "../api/RequestsApi";
+import InteractionManager from "react-native";
 
 export class Login extends Component {
     constructor(props) {
@@ -49,6 +50,18 @@ export class Login extends Component {
         this.fetchUsersDataRemote();
 
     };
+
+    componentWillUnmount(){
+        // save all requests data
+        this.saveDataOnLocalStorage();
+
+    }
+
+    saveDataOnLocalStorage(){
+        return AsyncStorage.setItem('allRequestsData', JSON.stringify(this.state.allRequestsData))
+            .then(json => console.log('Login - Requests data saved to local storage.'))
+            .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
+    }
 
     fetchUsersDataRemote() {
         // this.setState({
@@ -102,7 +115,6 @@ export class Login extends Component {
                 console.error(err);
                 this.showRetry();
             })
-            .done();
     }
 
     fetchAllRequestsDataLocalStorage() {
@@ -118,7 +130,6 @@ export class Login extends Component {
                 console.error(err);
                 console.log('Login - Requests data could not be retrieved from local storage.');
             })
-            .done()
     }
 
     handleCheckBox = () => {
@@ -133,6 +144,26 @@ export class Login extends Component {
             });
         }
     };
+
+    fetchAllRequestsData(){
+        return this.fetchAllRequestsDataLocalStorage()
+            .then(() => {
+                if (this.state.allRequestsData === null || this.state.allRequestsData.length === 0) {
+                    this.fetchAllRequestsDataRemote();
+
+                    // if data was fetched from remote persistence, then save it to local storage
+                    this.saveDataOnLocalStorage();
+                }
+            })
+            .catch(err => {
+                // if there was an error in fetching requests data from local storage, fetch from remote storage
+                this.fetchAllRequestsDataRemote();
+
+                // if data was fetched from remote persistence, then save it to local storage
+                this.saveDataOnLocalStorage();
+            })
+            .done();
+    }
 
     decideLoginInfoSavedToLocalStorage(username, password){
         console.log("Remember me - " + this.state.rememberUserChecked);
@@ -151,13 +182,12 @@ export class Login extends Component {
     decideViewAccessByUserType(type, nav) {
         if (type === 'admin'){
             // an admin can view all requests from all registered users
-            this.fetchAllRequestsDataLocalStorage();
-            if ( this.state.allRequestsData === null ) {
-                this.fetchAllRequestsDataRemote();
-            }
-            //TODO: add loading gif( fix loading)
+            this.fetchAllRequestsData();
 
-            nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`})
+            console.log(this.state.allRequestsData);
+            nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
+
+
         }else{
             //TODO: fetch user's requests
             // a user can only view his requests

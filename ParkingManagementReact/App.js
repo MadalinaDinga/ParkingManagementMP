@@ -67,14 +67,14 @@ const MainApp = StackNavigator({
         screen: DetailsRequest,
         navigationOptions: ({
             title: `View Request`,
-            path: 'request/:id',
+            path: 'request/:requestData',
         }),
     },
     Requests: {
         screen: RequestListScreen,
         navigationOptions: ({navigation}) => ({
             title: `Requests List`,
-            path: 'requests/',
+            path: 'requests/:newRequest/:editedData/:deletedId',
         }),
     },
 });
