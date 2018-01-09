@@ -13,6 +13,9 @@ import {raisedButtonAttributes} from "../common/attributes";
 import UsersAPI from "../api/LoginAPI";
 import RequestsAPI from "../api/RequestsApi";
 import InteractionManager from "react-native";
+import {getLogger} from "../common/utils";
+
+const log = getLogger('Login');
 
 export class Login extends Component {
     constructor(props) {
@@ -54,13 +57,12 @@ export class Login extends Component {
     componentWillUnmount(){
         // save all requests data
         this.saveDataOnLocalStorage();
-
     }
 
     saveDataOnLocalStorage(){
         return AsyncStorage.setItem('allRequestsData', JSON.stringify(this.state.allRequestsData))
-            .then(json => console.log('Login - Requests data saved to local storage.'))
-            .catch(error => console.log('Saving requests data to local storage encountered a problem.'));
+            .then(json => log('Requests data saved to local storage.'))
+            .catch(error => log('Saving requests data to local storage encountered a problem.'));
     }
 
     fetchUsersDataRemote() {
@@ -106,7 +108,7 @@ export class Login extends Component {
                         allRequestsData: responseData,
                         loaded: 1,
                     });
-                    console.log('Login - Requests data retrieved from remote storage.');
+                    log('Requests data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
@@ -124,16 +126,16 @@ export class Login extends Component {
                 this.setState({
                     allRequestsData:requestsLocal,
                 });
-                console.log('Login - Requests data retrieved from local storage.');
+                log('Requests data retrieved from local storage.');
             })
             .catch(err => {
                 console.error(err);
-                console.log('Login - Requests data could not be retrieved from local storage.');
+                log('Requests data could not be retrieved from local storage.');
             })
     }
 
     handleCheckBox = () => {
-        // console.log("Remember me - " + !this.state.rememberUserChecked);
+        // log("Remember me - " + !this.state.rememberUserChecked);
         if (this.state.rememberUserChecked === false ) {
             this.setState({
                 rememberUserChecked: true
@@ -162,41 +164,53 @@ export class Login extends Component {
                 // if data was fetched from remote persistence, then save it to local storage
                 this.saveDataOnLocalStorage();
             })
-            .done();
     }
 
     decideLoginInfoSavedToLocalStorage(username, password){
-        console.log("Remember me - " + this.state.rememberUserChecked);
+        log("Remember me - " + this.state.rememberUserChecked);
         // save username/ password into the async storage
         if (this.state.rememberUserChecked === true ) {
             AsyncStorage.setItem('username', username);
             AsyncStorage.setItem('password', password);
-            console.log('Username: ', username,' and password: ', password,' saved to local storage');
+            log('Username: ', username,' and password: ', password,' saved to local storage');
         }else{
             AsyncStorage.removeItem('username');
             AsyncStorage.removeItem('password');
-            console.log('Username: ', username,' and password: ', password,' not saved to local storage');
+            log('Username: ', username,' and password: ', password,' not saved to local storage');
         }
     }
 
     decideViewAccessByUserType(type, nav) {
         if (type === 'admin'){
             // an admin can view all requests from all registered users
-            this.fetchAllRequestsData();
+            this.fetchAllRequestsData()
+                .then(() => {
+                    log(this.state.allRequestsData.length + 'requests fetched.');
+                    nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
+                })
+                .done();
 
-            console.log(this.state.allRequestsData);
-            nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
-
+            // 1st run
+            // this.fetchAllRequestsDataRemote();
+            // this.saveDataOnLocalStorage();
+            // nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
 
         }else{
             //TODO: fetch user's requests
             // a user can only view his requests
-            // this.fetchUserRequestsDataLocalStorage();
+            this.fetchAllRequestsData()
+                .then(() => {
+                    log(this.state.allRequestsData.length + 'requests fetched.');
+                    nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
+                })
+            .done();
 
-            //TODO: pass requests data to the screen navigator
-            nav.navigate('NormalUserScreenNavigator');
+            // 1st run
+            // this.fetchAllRequestsDataRemote();
+            // this.saveDataOnLocalStorage();
+            //nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
         }
-        console.log("Logged in as ", type);
+        log("Logged in as ", type);
     }
 
     handleWrongUsernamePassword(auth){
@@ -206,7 +220,7 @@ export class Login extends Component {
                 'Auth Fail',
                 'Wrong username or password.',
                 [
-                    {text: 'Retry', onPress: () => console.log('Retry Pressed')},
+                    {text: 'Retry', onPress: () => log('Retry Pressed')},
                 ],
                 { cancelable: false }
             );
@@ -214,7 +228,7 @@ export class Login extends Component {
     }
 
     handleLogin = (username, password, nav) =>{
-        console.log("Login - username: " + username + " password: " + password + " nav: " + nav);
+        log("username: " + username + " password: " + password + " nav: " + nav);
 
         //the username & password can not be white spaces or null
         if (username.trim().length === 0 || password.trim().length === 0) {
@@ -222,7 +236,7 @@ export class Login extends Component {
                 'Empty fields',
                 'Username & password can not be empty.',
                 [
-                    {text: 'Retry', onPress: () => console.log('Retry Pressed')},
+                    {text: 'Retry', onPress: () => log('Retry Pressed')},
                 ],
                 { cancelable: false }
             );

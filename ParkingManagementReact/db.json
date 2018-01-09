@@ -11,8 +11,8 @@
     {"id": 3, "type": "Parking Subscription"},
     {"id": 4, "type": "Cancel Subscription"},
     {"id": 5, "type": "Cancel Reservation"},
-    {"id": 5, "type": "Quit Rental"},
-    {"id": 5, "type": "Drop Out Registration"}
+    {"id": 6, "type": "Quit Rental"},
+    {"id": 7, "type": "Drop Out Registration"}
   ],
   "requests": [
     {"id":1, "type": "Parking Spot Rental", "requestedAt": "10:22 / 19.09.2016", "period": "13.10.16 - 14.10.16", "requestedFor": "Raul SABOU", "createdBy": "Raul SABOU", "requestedFrom": "Mihai ENACHE", "parkingNo": 1, "status": "Approved","comment": "Hola"},

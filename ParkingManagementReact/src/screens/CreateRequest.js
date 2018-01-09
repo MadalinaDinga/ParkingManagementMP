@@ -12,6 +12,9 @@ import {
 import RequestsAPI from "../api/RequestsApi";
 import {raisedButtonAttributes} from "../common/attributes";
 import {Button} from "react-native-elements";
+import {getLogger} from "../common/utils";
+
+const log = getLogger('CreateRequest');
 
 export default class CreateRequest extends Component {
     constructor(prop) {
@@ -39,11 +42,13 @@ export default class CreateRequest extends Component {
 
     componentDidMount() {
         // offline - working with local storage
-        //if (this.fetchDataLocalStorage() === null){
+        this.fetchDataLocalStorage();
+
+        if (this.fetchDataLocalStorage() === null){
             // online - retrieve data from remote persistence
             // currently data is fetched from db.json
             this.fetchDataRemote();
-        //}
+        }
     }
 
     fetchDataRemote(){
@@ -54,13 +59,13 @@ export default class CreateRequest extends Component {
                         requestTypesData: responseData,
                         loaded: 1,
                     });
-                    console.log('Login - Requests Types data retrieved from remote storage.');
+                    log('Requests Types data retrieved from remote storage.');
                 } else {
                     this.showRetry();
                 }
             })
             .catch((error) => {
-                console.log('Message::ERROR:', error);
+                log('Message::ERROR:', error);
                 this.showRetry();
             })
             .done();
@@ -74,12 +79,12 @@ export default class CreateRequest extends Component {
                     requestTypesData:requestsTypes,
                     loaded: 1,
                 });
-                console.log('CreateRequest - Requests Types data retrieved from local storage.');
+                log('Requests Types data retrieved from local storage.');
                 return requestsTypes;
             })
             .catch(err => {
                 console.error(err);
-                console.log('CreateRequest - Requests Types data could not be retrieved from local storage.');
+                log('Requests Types data could not be retrieved from local storage.');
                 return null;
             })
             .done()
@@ -92,8 +97,8 @@ export default class CreateRequest extends Component {
 
     saveDataOnLocalStorage(){
         return AsyncStorage.setItem('requestTypesData', JSON.stringify(this.state.requestTypesData))
-            .then(json => console.log('CreateRequest - Request Types data saved to local storage.'))
-            .catch(error => console.log('CreateRequest - Saving Request Types data to local storage encountered a problem.'));
+            .then(json => log('Request Types data saved to local storage.'))
+            .catch(error => log('Saving Request Types data to local storage encountered a problem.'));
     }
 
     showRetry() {
@@ -127,21 +132,26 @@ export default class CreateRequest extends Component {
             requestPeriod: new Date().getDate(),
             status: "Pending"
         };
-        this.props.navigation.navigate('Requests', {newRequest: `${JSON.stringify(newReq)}`})
+
+        log(`New request:\n ${newReq}`);
+
+        //this.props.navigation.state.params.r.push(newReq);
+        //this.props.navigation.goBack();
+        this.props.navigation.navigate('AdminScreenNavigator', {newRequest: `${JSON.stringify(newReq)}`})
     };
 
     handleCreateRequest = (requestType, receiverName, creatorName, creatorMessage) => {
-        // console.log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "creatorMessage: " + creatorMessage);
+        // log("selectedRequestType: " + requestType + "receiverName: " + receiverName + "creatorName: " + creatorName + "creatorMessage: " + creatorMessage);
         if (requestType!=="" && receiverName!=="" && creatorName!=="" && creatorMessage!=="") {
             Alert.alert(
                 'Send email',
                 'Do you also want to send the request by email?',
                 [
                     {text: 'YES', onPress: () => {
-                        console.log('YES pressed - sending email');
+                        log('YES pressed - sending email');
                         CreateRequest.handleSendEmailIntent(requestType, creatorName, receiverName, creatorMessage);
                     }},
-                    {text: 'NO', onPress: console.log("NO pressed"), style: 'cancel'},
+                    {text: 'NO', onPress: log("NO pressed"), style: 'cancel'},
                 ],
                 { cancelable: false }
             );
@@ -159,7 +169,7 @@ export default class CreateRequest extends Component {
                 'Empty fields',
                 'Please fill all the input fields.',
                 [
-                    {text: 'OK', onPress: () => console.log('OK Pressed')},
+                    {text: 'OK', onPress: () => log('OK Pressed')},
                 ],
                 { cancelable: false }
             );

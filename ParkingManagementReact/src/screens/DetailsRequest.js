@@ -11,6 +11,7 @@ import {
 import RequestsAPI from "../api/RequestsApi";
 import {raisedButtonAttributes} from "../common/attributes";
 import {Button} from "react-native-elements";
+import {getLogger} from "../common/utils";
 
 const requestTypes = [
     {"id": 1, "type": "Parking Spot Rental"},
@@ -31,6 +32,8 @@ const parkingNo = [
     {"id": 6},
     {"id": 7}
 ];
+
+const log = getLogger('DetailsRequest');
 
 export default class DetailsRequest extends Component {
     constructor(prop) {
@@ -56,17 +59,25 @@ export default class DetailsRequest extends Component {
     componentDidMount() {
         // request types
         this.fetchDataLocalStorage();
-        // this.fetchDataRemote();
+
+        if (this.fetchDataLocalStorage() === null){
+            // online - retrieve data from remote persistence
+            // currently data is fetched from db.json
+            this.fetchDataRemote();
+        }
 
         // the request data is sent through navigation props
         let requestData = JSON.parse(this.props.navigation.state.params.requestData);
-        console.log(`DetailsRequest - request data ${requestData}`);
+        log(`request data ${requestData}`);
         this.setState({
             requestData: requestData,
             id: requestData.id,
             selectedRequestType: requestData.type,
             requestPeriod: requestData.period,
-            comment:requestData.comment,
+            comment: requestData.comment,
+            requestedFrom: requestData.requestedFrom,
+            requestedFor: requestData.requestedFor,
+            status: requestData.status,
             loaded: 1,
         });
     }
@@ -96,7 +107,7 @@ export default class DetailsRequest extends Component {
                 }
             })
             .catch((error) => {
-                console.log('Message::ERROR:', error);
+                log('Message::ERROR:', error);
                 this.showRetry();
             })
             .done();
@@ -118,7 +129,7 @@ export default class DetailsRequest extends Component {
                 }
             })
             .catch((error) => {
-                console.log('Message::ERROR:', error);
+                log('Message::ERROR:', error);
                 this.showRetry();
             })
             .done();
@@ -137,18 +148,18 @@ export default class DetailsRequest extends Component {
                     requestTypes: requestsTypes,
                     loaded: 1,
                 });
-                console.log('CreateRequest - Request Types data retrieved from local storage.');
+                log('Request Types data retrieved from local storage.');
             })
             .catch(err => {
                 console.error(err);
-                console.log('CreateRequest - Request Types data could not be retrieved from local storage.');
+                log('Request Types data could not be retrieved from local storage.');
             })
             .done()
     }
 
-    handleEdit = (id, requestPeriod, requestType, comment) =>{
-        console.log('Clicked!');
-        console.log("Edited data - " + "id: " + id +  " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
+    handleEdit = (id, requestPeriod, requestType, comment, requestedFrom, requestedFor, status) =>{
+        log('Clicked!');
+        log("Edited data - " + "id: " + id +  " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
         if( comment === undefined){
             comment = "";
         }
@@ -158,16 +169,20 @@ export default class DetailsRequest extends Component {
             type: requestType,
             period: requestPeriod,
             comment: comment,
+            requestedFrom: requestedFrom,
+            requestedFor: requestedFor,
+            status: status,
         };
-        this.props.navigation.navigate('Requests', {editedData: `${JSON.stringify(editedData)}`})
+
+        this.props.navigation.navigate('AdminScreenNavigator', {editedData: `${JSON.stringify(editedData)}`})
     };
 
     handleDelete = (id) =>{
-        console.log('Clicked!');
-        console.log('Request with id ',id, ' marked for deletion');
+        log('Clicked!');
+        log('Request with id ',id, ' marked for deletion');
 
         // perform delete
-        this.props.navigation.navigate('Requests', {deletedId: `${JSON.stringify(id)}`})
+        this.props.navigation.navigate('AdminScreenNavigator', {deletedId: `${id}`})
     };
 
     renderRequestEditableInfo(){
@@ -198,7 +213,7 @@ export default class DetailsRequest extends Component {
             <Text>From:</Text>
             <TextInput
                 style={styles.textInput}
-                value={this.state.requestData.createdBy}
+                value={this.state.requestData.requestedFor}
             />
 
             <Text>Period( editable):</Text>
@@ -239,14 +254,21 @@ export default class DetailsRequest extends Component {
                     title="SAVE CHANGES"
                     icon={{name: 'save'}}
                     accessibilityLabel="Edit request"
-                    onPress={this.handleEdit.bind(this, this.state.id, this.state.requestPeriod, this.state.selectedRequestType, this.state.comment)}/>
+                    onPress={this.handleEdit.bind(this,
+                        this.state.id,
+                        this.state.requestPeriod,
+                        this.state.selectedRequestType,
+                        this.state.comment,
+                        this.state.requestedFrom,
+                        this.state.requestedFor,
+                        this.state.status)}/>
 
                 <Button
                     {... raisedButtonAttributes}
                     title="DELETE"
                     icon={{name: 'delete'}}
                     accessibilityLabel="Delete request"
-                    onPress={this.handleDelete.bind(this.state.requestData.id)}/>
+                    onPress={this.handleDelete.bind(this, this.state.requestData.id)}/>
 
                 {/*<Button
                     {... raisedButtonAttributes}

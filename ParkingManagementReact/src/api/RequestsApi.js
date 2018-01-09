@@ -1,9 +1,10 @@
+import {ip} from "./api";
+
 export default class RequestsAPI {
 
     static getRequests() {
         return fetch(
-            // `http://` + `192.168.4.2` + `:3004/requests`,
-            `http://` + `192.168.0.181` + `:3004/requests`,
+            `http://` + `${ip}` + `:3004/requests`,
             {
                 method: 'GET'
             })
@@ -23,8 +24,7 @@ export default class RequestsAPI {
 
     static getRequestsById(id) {
         return fetch(
-            // `http://` + `192.168.4.2` + `:3004/requests/${id}`,
-            `http://` + `192.168.0.181` + `:3004/requests/${id}`,
+            `http://` + `${ip}` + `:3004/requests/${id}`,
             {
                 method: 'GET'
             })
@@ -44,8 +44,7 @@ export default class RequestsAPI {
 
     static getRequestTypes() {
         return fetch(
-            // `http://` + `192.168.4.2` + `:3004/requestTypes`,
-            `http://` + `192.168.0.181` + `:3004/requestTypes`,
+            `http://` + `${ip}` + `:3004/requestTypes`,
             {
                 method: 'GET'
             })

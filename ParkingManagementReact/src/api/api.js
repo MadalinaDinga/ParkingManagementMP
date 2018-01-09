@@ -1,3 +1,7 @@
 export const apiUrl = 'http://localhost:8181/';
-export const headers = {'Accept': 'application/json', 'Content-Type': 'application/json'};
-export const authHeaders = (token) => ({...headers, 'x-auth-token': `${token}`});
+// hotspot:
+export const ip = `172.20.10.5`;
+// home:
+// export const ip = `192.168.0.181`;
+// faculta:
+// export const ip = `192.168.4.2`;

@@ -41,6 +41,7 @@ public class ParkingLotListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
         FloatingActionButton emailInput = (FloatingActionButton) findViewById(R.id.fab);
+        // onClick event on rows to view details
         emailInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -54,9 +55,9 @@ public class ParkingLotListActivity extends AppCompatActivity {
         assert recyclerView != null;
         data = Parking.getInstance(this);
         setupRecyclerView((RecyclerView) recyclerView);
+        //context menu( event: long click)
         registerForContextMenu((RecyclerView) recyclerView);
     }
-
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
@@ -112,13 +113,6 @@ public class ParkingLotListActivity extends AppCompatActivity {
                 Intent intent = new Intent(context, ParkingLotDetailActivity.class);
                 intent.putExtra(ParkingLotDetailActivity.ARG_ITEM_ID, item.getId());
                 context.startActivity(intent);
-            }
-        };
-        private final View.OnLongClickListener mOnLongClickListener = new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                mCurrentItem = (Request) view.getTag();
-                return true;
             }
         };
 

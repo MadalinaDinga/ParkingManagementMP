@@ -50,7 +50,7 @@ const MainApp = StackNavigator({
         screen: NormalUserScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'normalUserScreenNavigator/'
+            path: 'normalUserScreenNavigator/:r/:newRequest/:editedData/:deletedId'
         },
     },
 
@@ -59,7 +59,7 @@ const MainApp = StackNavigator({
         screen: AdminScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'adminScreenNavigator/:r'
+            path: 'adminScreenNavigator/:r/:newRequest/:editedData/:deletedId'
         },
     },
 
