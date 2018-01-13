@@ -251,7 +251,22 @@ export class Login extends Component {
                 .then((responseData) => {
                     console.log(responseData);
 
-                    if (typeof responseData == "object") {
+                    if (responseData === null) {
+                        this.setState({
+                            user:{
+                                authorized:false,
+                                username: username,
+                                password:''
+                            },
+                            roleBean:{},
+                            errorMessage: responseData
+                        });
+
+                        console.log('Login... Failed: ' + responseData);
+
+                        // the given username & password not found
+                        this.handleWrongUsernamePassword(this.state.authorized);
+                    } else if (typeof responseData === "object") {
                         this.setState({
                             authorization_credentials: responseData["access_token"],
                             user: {
@@ -269,22 +284,6 @@ export class Login extends Component {
 
                         // get user data
                         this.fetchUserDataRemote(nav)
-
-                    } else {
-                        this.setState({
-                            user:{
-                                authorized:false,
-                                username: username,
-                                password:''
-                            },
-                            roleBean:{},
-                            errorMessage: responseData
-                        });
-
-                        console.log('Login... Failed: ' + responseData);
-
-                        // the given username & password not found
-                        this.handleWrongUsernamePassword(this.state.authorized);
                     }
                     this.showRetry();
                 })
