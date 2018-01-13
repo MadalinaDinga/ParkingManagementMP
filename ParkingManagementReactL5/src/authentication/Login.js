@@ -10,10 +10,10 @@ import {
 import {AsyncStorage} from 'react-native';
 import {Button} from "react-native-elements";
 import {raisedButtonAttributes} from "../common/attributes";
-import LoginAPI from "../api/LoginAPI";
+import UsersAPI from "../api/LoginAPI";
 import RequestsAPI from "../api/RequestsApi";
+import InteractionManager from "react-native";
 import {getLogger} from "../common/utils";
-import UserAPI from "../api/UserAPI";
 
 const log = getLogger('Login');
 
@@ -21,23 +21,12 @@ export class Login extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // form data
             username: '',
-            password:'',
+            password: '',
+            auth: false,
 
-            user: {
-                authorized : false,
-                username : '',
-                pass : '',
-            },
-
-            /* this object will contain all the relevant information after a successful login */
-            roleBean: {
-                isAdmin: false,
-            },
-
-            // the info about the logged in user
-            authorization_credentials: [],
+            // the list of registered users
+            usersData: [],
 
             // all requests data
             allRequestsData: [],
@@ -60,6 +49,9 @@ export class Login extends Component {
                 password: result,
             })
         });
+
+        this.fetchUsersDataRemote();
+
     };
 
     componentWillUnmount(){
@@ -73,10 +65,58 @@ export class Login extends Component {
             .catch(error => log('Saving requests data to local storage encountered a problem.'));
     }
 
+    fetchUsersDataRemote() {
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(listData),
+        //     loaded: 1,
+        // });
+
+        UsersAPI.getUsers()
+            .then((responseData) => {
+                if (responseData !== null) {
+                    this.setState({
+                        usersData: responseData,
+                        loaded: 1,
+                    });
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                this.showRetry();
+            })
+            .done();
+    }
+
     showRetry() {
         this.setState({
             loaded: 2,
         });
+    }
+
+    fetchAllRequestsDataRemote() {
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(listData),
+        //     loaded: 1,
+        // });
+
+        RequestsAPI.getRequests()
+            .then((responseData) => {
+                if (responseData !== null) {
+                    this.setState({
+                        allRequestsData: responseData,
+                        loaded: 1,
+                    });
+                    log('Requests data retrieved from remote storage.');
+                } else {
+                    this.showRetry();
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                this.showRetry();
+            })
     }
 
     fetchAllRequestsDataLocalStorage() {
@@ -95,7 +135,7 @@ export class Login extends Component {
     }
 
     handleCheckBox = () => {
-        log("Remember me - " + !this.state.rememberUserChecked);
+        // log("Remember me - " + !this.state.rememberUserChecked);
         if (this.state.rememberUserChecked === false ) {
             this.setState({
                 rememberUserChecked: true
@@ -112,6 +152,9 @@ export class Login extends Component {
             .then(() => {
                 if (this.state.allRequestsData === null || this.state.allRequestsData.length === 0) {
                     this.fetchAllRequestsDataRemote();
+
+                    // if data was fetched from remote persistence, then save it to local storage
+                    this.saveDataOnLocalStorage();
                 }
             })
             .catch(err => {
@@ -137,60 +180,37 @@ export class Login extends Component {
         }
     }
 
-    fetchAllRequestsDataRemote() {
-        RequestsAPI.getRequests(this.state.authorization_credentials)
-            .then((responseData) => {
-                if (responseData !== null) {
-                    this.setState({
-                        allRequestsData: responseData,
-                        loaded: 1,
-                    });
-                    log('Requests data retrieved from remote storage.');
-                } else {
-                    this.showRetry();
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                this.showRetry();
-            })
-    }
-
-    decideViewAccessByUserType(nav) {
-        if (this.state.roleBean.isAdmin){
+    decideViewAccessByUserType(type, nav) {
+        if (type === 'admin'){
             // an admin can view all requests from all registered users
             this.fetchAllRequestsData()
                 .then(() => {
-                    log(this.state.allRequestsData.length + ' requests fetched.');
-
-                    // if data was fetched from remote persistence, then save it to local storage
-                    this.saveDataOnLocalStorage();
-                    nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`, token: `${this.state.authorization_credentials}`});
+                    log(this.state.allRequestsData.length + 'requests fetched.');
+                    nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
                 })
                 .done();
 
-            //1st run
+            // 1st run
             // this.fetchAllRequestsDataRemote();
             // this.saveDataOnLocalStorage();
-            // nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`, token: `${this.state.authorization_credentials}`});
+            // nav.navigate('AdminScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
+
         }else{
+            //TODO: fetch user's requests
             // a user can only view his requests
             this.fetchAllRequestsData()
                 .then(() => {
-                    log(this.state.allRequestsData.length + ' requests fetched.');
-
-                    // if data was fetched from remote persistence, then save it to local storage
-                    this.saveDataOnLocalStorage();
-                    nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`, token: `${this.state.authorization_credentials}`});
+                    log(this.state.allRequestsData.length + 'requests fetched.');
+                    nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
                 })
             .done();
 
             // 1st run
             // this.fetchAllRequestsDataRemote();
             // this.saveDataOnLocalStorage();
-            // nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`, token: `${this.state.authorization_credentials}`});
-
+            //nav.navigate('NormalUserScreenNavigator', {r: `${JSON.stringify(this.state.allRequestsData)}`});
         }
+        log("Logged in as ", type);
     }
 
     handleWrongUsernamePassword(auth){
@@ -207,34 +227,8 @@ export class Login extends Component {
         }
     }
 
-    fetchUserDataRemote(nav) {
-        UserAPI.getUserData(this.state.authorization_credentials)
-            .then((responseData) => {
-                if (responseData !== null) {
-                    this.setState({
-                        roleBean:{
-                            isAdmin: responseData[0]["is_administrator"],
-                        },
-                        loaded: 1,
-                    });
-                    log('User info retrieved from remote storage.');
-                    log('Admin:' + this.state.roleBean.isAdmin);
-
-                    // different views depending on user type( admin/ default)
-                    this.decideViewAccessByUserType(nav);
-                } else {
-                    this.showRetry();
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                this.showRetry();
-            });
-    }
-
-    handleLoginBtn = (username, password, nav) =>{
+    handleLogin = (username, password, nav) =>{
         log("username: " + username + " password: " + password + " nav: " + nav);
-        log('Login start...');
 
         //the username & password can not be white spaces or null
         if (username.trim().length === 0 || password.trim().length === 0) {
@@ -246,67 +240,22 @@ export class Login extends Component {
                 ],
                 { cancelable: false }
             );
-        }else {
-            LoginAPI.doLogin(username, password)
-                .then((responseData) => {
-                    console.log(responseData);
+        }else{
+            for (let user of this.state.usersData){
+                // the given username & password are registered
+                if (user.username === this.state.username && user.password === this.state.password){
 
-                    if (typeof responseData == "object") {
-                        this.setState({
-                            authorization_credentials: responseData["access_token"],
-                            user: {
-                                authorized: true,
-                            },
-                            roleBean: responseData,
-                            loaded: 1,
-                            errorMessage: '',
-                        });
+                    this.state.auth = true;
 
-                        console.log('Login... OK');
+                    // decide whether to save the username & password to local storage
+                    this.decideLoginInfoSavedToLocalStorage(user.username, user.password);
 
-                        // decide whether to save the username & password to local storage
-                        this.decideLoginInfoSavedToLocalStorage(this.state.username, this.state.password);
-
-                        // get user data
-                        this.fetchUserDataRemote(nav)
-
-                    } else {
-                        this.setState({
-                            user:{
-                                authorized:false,
-                                username: username,
-                                password:''
-                            },
-                            roleBean:{},
-                            errorMessage: responseData
-                        });
-
-                        console.log('Login... Failed: ' + responseData);
-
-                        // the given username & password not found
-                        this.handleWrongUsernamePassword(this.state.authorized);
-                    }
-                    this.showRetry();
-                })
-                .catch((error) => {
-                    console.error(error);
-
-                    const message = (error.status) ? error.status + ':' + error.statusText : 'The server is not reachable. The server may be down or your internet settings may be down. ('+error.message +')';
-                    this.setState({
-                        user:{
-                            authorized:false,
-                            username: username,
-                            password:''
-
-                        },
-                        roleBean:{},
-                        errorMessage: message
-                    });
-                    console.log('Login... Failed ' + message);
-
-                    this.showRetry();
-                })
-                .done();
+                    // different views depending on user type( admin/ default)
+                    this.decideViewAccessByUserType(user.type, nav);
+                }
+            }
+            // the given username & password not found
+            this.handleWrongUsernamePassword(this.state.auth);
         }
     };
 
@@ -361,7 +310,7 @@ export class Login extends Component {
                     {... raisedButtonAttributes}
                     title="LOGIN"
                     accessibilityLabel="Login"
-                    onPress={this.handleLoginBtn.bind(this,
+                    onPress={this.handleLogin.bind(this,
                         this.state.username, this.state.password, nav)}
                 />
             </View>

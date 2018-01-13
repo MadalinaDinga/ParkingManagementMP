@@ -45,9 +45,7 @@ export default class RequestListScreen extends Component {
         }else{
             // if component state was lost( after an unmount) - navigation causes the component to mount again
             // offline - working with local storage
-            // this.fetchDataLocalStorage()
-
-            this.fetchDataRemote();
+            this.fetchDataLocalStorage()
         }
 
         // offline - working with local storage
@@ -70,10 +68,6 @@ export default class RequestListScreen extends Component {
 
             // newRequest is a JSON object
             let newRequest = JSON.parse(this.props.navigation.state.params.newRequest);
-
-            RequestsAPI.addRequest(this.props.navigation.state.params.token, newRequest);
-
-            // add to local storage
             newRequest["id"] = this.state.requestsData[this.state.requestsData.length-1] + 1;
 
             log(`New request:\n ${JSON.stringify(newRequest)}`);
@@ -87,12 +81,8 @@ export default class RequestListScreen extends Component {
 
         // update request
         if (this.props.navigation.state.params.editedData !== undefined) {
-
             log(`Received editedData:\n ${this.props.navigation.state.params.editedData}`);
             let editedRequest = JSON.parse(this.props.navigation.state.params.editedData);
-
-            RequestsAPI.updateRequest(this.props.navigation.state.params.token, editedRequest);
-
             //replace old element
             // let newRequestsData = this.state.requestsData.find(request => request.id == this.props.navigation.state.params.editedData.id);
             // this.state.requestsData.splice(this.state.requestsData.indexOf(newRequestsData), 1, newRequestsData);
@@ -111,12 +101,9 @@ export default class RequestListScreen extends Component {
             this.saveDataOnLocalStorage();
         }
 
-        //delete request
+        //edit request
         if (this.props.navigation.state.params.deletedId !== undefined) {
             log(`Received deletedId:\n ${this.props.navigation.state.params.deletedId}`);
-
-            RequestsAPI.deleteRequest(this.props.navigation.state.params.token, this.props.navigation.state.params.deletedId);
-
             let newRequestsData = this.state.requestsData.find(
                 request => {return request.id == this.props.navigation.state.params.deletedId}
             );
@@ -127,7 +114,7 @@ export default class RequestListScreen extends Component {
             // let oldRequestsData = this.state.requestsData;
             this.state.requestsData.splice(index, 1);
             log(`Data length after delete:\n ${this.state.requestsData.length}`);
-            this.props.navigation.state.params.deletedId = undefined;  // avoid another deletion*/
+            this.props.navigation.state.params.deletedId = undefined;  // avoid another deletion
 
             // save modifications to local storage
             this.saveDataOnLocalStorage();
@@ -185,7 +172,12 @@ export default class RequestListScreen extends Component {
     }
 
     fetchDataRemote() {
-        RequestsAPI.getRequests(this.props.navigation.state.params.token)
+        // this.setState({
+        //     dataSource: this.state.dataSource.cloneWithRows(listData),
+        //     loaded: 1,
+        // });
+
+        RequestsAPI.getRequests()
             .then((responseData) => {
                 if (responseData !== null) {
                     this.setState({
@@ -206,7 +198,6 @@ export default class RequestListScreen extends Component {
     }
 
     fetchDataLocalStorage() {
-        log("Fetching requests...");
         return  AsyncStorage.getItem('allRequestsData')
             .then(req => JSON.parse(req))
             .then(requestsLocal => {
@@ -240,22 +231,23 @@ export default class RequestListScreen extends Component {
         });
     }
 
-    renderRequest(nav,request) {
-
+    renderRequest(nav, request) {
+        // log("RENDER:");
+        // log(JSON.stringify(request));
         if (request!== undefined && request.id !== undefined) {
             return (
                 //TODO: different fields shown depending on the request type
                 <TouchableNativeFeedback
                     accessible={true}
                     accessibilityLabel={'Tap on the row to view & edit the request.'}
-                    onPress={() => nav.navigate('Details', {requestData: `${JSON.stringify(request)}`, token: `${nav.state.params.token}`})}>
+                    onPress={() => nav.navigate('Details', {requestData: `${JSON.stringify(request)}`})}>
                     <View style={styles.listItemWrapper} accessibilityLiveRegion="assertive">
                         <Text accessible={true}
                               accessibilityLabel="This is a request item">
                             {request.type}
                             {"\n"}Requested by: {request.requestedFor}
                             {"\n"}Requested from: {request.requestedFrom}
-                            {"\n"}Status: {request.rentalRequestedAt}
+                            {"\n"}Status: {request.status}
                             {"\n"}
                         </Text>
                     </View>

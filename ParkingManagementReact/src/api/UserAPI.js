@@ -1,17 +1,14 @@
-import {ip} from "./api";
+export default class UserAPI {
 
-export default class LoginAPI {
-    static doLogin(username, password) {
+    static getUserData(authorization_credentials) {
         return fetch(
-            // `http://` + `${ip}` + `:3004/users`,
-            `https://parking-django.herokuapp.com/oauth2/token/`,
+            `https://parking-django.herokuapp.com/parking/`,
             {
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization':'Bearer ' + authorization_credentials
                 },
-                body:`grant_type=password&username=${username}&password=${password}&client_id=jZeRQs68ZvlXAe4x5VCYVw0exvq3Pclu21wztAnY&client_secret=KR6zeaGvjEZwbPndcUNRZS5XmTGWpie2XCyBbfG4nljYiCk5VPXh6phbYFX6zhke6Rq33QPngby4SgyBgX943zsNQAmDZHzhZ1YAR2r2KKSuhcDniow8vpVr4pSOXzx8`,
-
             })
             .then((response) => {
                 if (response.status === 200) {

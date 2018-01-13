@@ -10,11 +10,6 @@ import {
     TabNavigator
 } from "react-navigation";
 
-// To see all the requests in the chrome Dev tools in the network tab.
-XMLHttpRequest = GLOBAL.originalXMLHttpRequest ?
-    GLOBAL.originalXMLHttpRequest :
-    GLOBAL.XMLHttpRequest;
-
 const mapNavigationStateParamsToPropsAdmin = (MyComponent) => {
     return class extends Component {
         render() {
@@ -55,7 +50,7 @@ const MainApp = StackNavigator({
         screen: NormalUserScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'normalUserScreenNavigator/:r/:newRequest/:editedData/:deletedId/:token'
+            path: 'normalUserScreenNavigator/:r/:newRequest/:editedData/:deletedId'
         },
     },
 
@@ -64,7 +59,7 @@ const MainApp = StackNavigator({
         screen: AdminScreenNavigator,
         navigationOptions: {
             title: 'Parking System',
-            path: 'adminScreenNavigator/:r/:newRequest/:editedData/:deletedId/:token'
+            path: 'adminScreenNavigator/:r/:newRequest/:editedData/:deletedId'
         },
     },
 
@@ -72,7 +67,7 @@ const MainApp = StackNavigator({
         screen: DetailsRequest,
         navigationOptions: ({
             title: `View Request`,
-            path: 'request/:requestData/:token',
+            path: 'request/:requestData',
         }),
     },
     Requests: {

@@ -41,20 +41,18 @@ export default class CreateRequest extends Component {
     }
 
     componentDidMount() {
-        this.fetchDataRemote();
-
         // offline - working with local storage
-        // this.fetchDataLocalStorage();
-        //
-        // if (this.fetchDataLocalStorage() === null){
-        //     // online - retrieve data from remote persistence
-        //     // currently data is fetched from db.json
-        //     this.fetchDataRemote();
-        // }
+        this.fetchDataLocalStorage();
+
+        if (this.fetchDataLocalStorage() === null){
+            // online - retrieve data from remote persistence
+            // currently data is fetched from db.json
+            this.fetchDataRemote();
+        }
     }
 
     fetchDataRemote(){
-        RequestsAPI.getRequestTypes(this.props.navigation.state.params.token)
+        RequestsAPI.getRequestTypes()
             .then((responseData) => {
                 if (responseData !== null) {
                     this.setState({
@@ -124,44 +122,22 @@ export default class CreateRequest extends Component {
         });
     }
 
-    // addRequestToLocalStorage(requestType, receiverName, creatorName, creatorMessage){
-    //     let newReq = {
-    //         id: -1,
-    //         type: requestType,
-    //         comment: creatorMessage,
-    //         requestedFrom: receiverName,
-    //         requestedFor: creatorName,
-    //         requestPeriod: new Date().getDate(),
-    //         status: "Pending"
-    //     };
-    //
-    //     log(`New request:\n ${newReq}`);
-    //
-    //     //this.props.navigation.state.params.r.push(newReq);
-    //     //this.props.navigation.goBack();
-    //     this.props.navigation.navigate('AdminScreenNavigator', {newRequest: `${JSON.stringify(newReq)}`})
-    // };
-
-    // to be replaced( see top)
     addRequestToLocalStorage(requestType, receiverName, creatorName, creatorMessage){
         let newReq = {
+            id: -1,
             type: requestType,
-            requestedAt: new Date().getDate(),
-            period: new Date().getDate(),
-            requestedFor: creatorName,
-            createdBy: creatorName,
+            comment: creatorMessage,
             requestedFrom: receiverName,
-            reservationRequestedAt: creatorMessage,
-            rentalRequestedAt: "Pending",
-            parkingNo: 1,
-            parking: 1
+            requestedFor: creatorName,
+            requestPeriod: new Date().getDate(),
+            status: "Pending"
         };
 
         log(`New request:\n ${newReq}`);
 
         //this.props.navigation.state.params.r.push(newReq);
         //this.props.navigation.goBack();
-        this.props.navigation.navigate('AdminScreenNavigator', {newRequest: `${JSON.stringify(newReq)}`, token: `${this.props.navigation.state.params.token}`})
+        this.props.navigation.navigate('AdminScreenNavigator', {newRequest: `${JSON.stringify(newReq)}`})
     };
 
     handleCreateRequest = (requestType, receiverName, creatorName, creatorMessage) => {
@@ -305,7 +281,7 @@ export default class CreateRequest extends Component {
                     <Button title="RETRY"
                             onPress={() => {
                                 this.setState({loaded: 0});
-                                this.fetchDataRemote(this.props.navigation.state.params.token);}}
+                                this.fetchDataRemote();}}
                     />
                 </View>);
         }

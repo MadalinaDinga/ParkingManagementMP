@@ -57,44 +57,29 @@ export default class DetailsRequest extends Component {
     }
 
     componentDidMount() {
-        this.fetchDataRemote();
-
         // request types
-        // this.fetchDataLocalStorage();
-        //
-        // if (this.fetchDataLocalStorage() === null){
-        //     // online - retrieve data from remote persistence
-        //     // currently data is fetched from db.json
-        //     this.fetchDataRemote();
-        // }
+        this.fetchDataLocalStorage();
+
+        if (this.fetchDataLocalStorage() === null){
+            // online - retrieve data from remote persistence
+            // currently data is fetched from db.json
+            this.fetchDataRemote();
+        }
 
         // the request data is sent through navigation props
-        log(`request data ${this.props.navigation.state.params.requestData}`);
         let requestData = JSON.parse(this.props.navigation.state.params.requestData);
-
+        log(`request data ${requestData}`);
         this.setState({
             requestData: requestData,
             id: requestData.id,
             selectedRequestType: requestData.type,
             requestPeriod: requestData.period,
-            comment: requestData.reservationRequestedAt,
+            comment: requestData.comment,
             requestedFrom: requestData.requestedFrom,
             requestedFor: requestData.requestedFor,
-            status: requestData.rentalRequestedAt,
+            status: requestData.status,
             loaded: 1,
         });
-
-        // this.setState({
-        //     requestData: requestData,
-        //     id: requestData.id,
-        //     selectedRequestType: requestData.type,
-        //     requestPeriod: requestData.period,
-        //     comment: requestData.comment,
-        //     requestedFrom: requestData.requestedFrom,
-        //     requestedFor: requestData.requestedFor,
-        //     status: requestData.status,
-        //     loaded: 1,
-        // });
     }
 
     showRetry() {
@@ -110,7 +95,7 @@ export default class DetailsRequest extends Component {
 
     fetchRequestTypesRemote(){
         // for the type picker
-        RequestsAPI.getRequestTypes(this.props.navigation.state.params.token)
+        RequestsAPI.getRequestTypes()
             .then((responseData) => {
                 if (responseData !== null) {
                     this.setState({
@@ -153,7 +138,6 @@ export default class DetailsRequest extends Component {
     //fetch from local storage
     fetchDataLocalStorage() {
         this.fetchRequestTypesLocalStorage();
-        // here I can add other things that could be kept on local storage
     }
 
     fetchRequestTypesLocalStorage(){
@@ -173,36 +157,32 @@ export default class DetailsRequest extends Component {
             .done()
     }
 
-    handleEdit = (id, selectedRequestType, requestPeriod, comment, requestedFrom, requestedFor, status) =>{
-        log('Edit Clicked!');
-        log("Edited data - " + "id: " + id +  " type: " + selectedRequestType + " period: " + requestPeriod + " comment: " + comment + " requestedFrom: " + requestedFrom + "requestedFor: " + requestedFor + "status: " + status);
+    handleEdit = (id, requestPeriod, requestType, comment, requestedFrom, requestedFor, status) =>{
+        log('Clicked!');
+        log("Edited data - " + "id: " + id +  " period: " + requestPeriod + " type: " + requestType + " comment: " + comment);
         if( comment === undefined){
             comment = "";
         }
         // perform data edit
         let editedData = {
             id: id,
-            type: selectedRequestType,
-            requestedAt: new Date().getDate(),
+            type: requestType,
             period: requestPeriod,
-            createdBy: requestedFor,
-            requestedFor: requestedFor,
+            comment: comment,
             requestedFrom: requestedFrom,
-            reservationRequestedAt: comment,
-            rentalRequestedAt: status,
-            parkingNo: 1,
-            parking: 1,
+            requestedFor: requestedFor,
+            status: status,
         };
 
-        this.props.navigation.navigate('AdminScreenNavigator', {editedData: `${JSON.stringify(editedData)}`, token: `${this.props.navigation.state.params.token}`})
+        this.props.navigation.navigate('AdminScreenNavigator', {editedData: `${JSON.stringify(editedData)}`})
     };
 
     handleDelete = (id) =>{
-        log('Delete Clicked!');
+        log('Clicked!');
         log('Request with id ',id, ' marked for deletion');
 
         // perform delete
-        this.props.navigation.navigate('AdminScreenNavigator', {deletedId: `${id}`, token: `${this.props.navigation.state.params.token}`})
+        this.props.navigation.navigate('AdminScreenNavigator', {deletedId: `${id}`})
     };
 
     renderRequestEditableInfo(){
@@ -276,8 +256,8 @@ export default class DetailsRequest extends Component {
                     accessibilityLabel="Edit request"
                     onPress={this.handleEdit.bind(this,
                         this.state.id,
-                        this.state.selectedRequestType,
                         this.state.requestPeriod,
+                        this.state.selectedRequestType,
                         this.state.comment,
                         this.state.requestedFrom,
                         this.state.requestedFor,
@@ -301,7 +281,6 @@ export default class DetailsRequest extends Component {
     }
 
     render() {
-
         if (this.state.loaded === 0) {
             return (
                 <View>
